@@ -1,0 +1,140 @@
+@charset "UTF-8";
+
+*{
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+    background-color: rgba(0, 162, 255, 0.781)
+}
+
+header{
+    padding: 10px;
+    border: 5px;
+    background-color: blue;
+}
+
+header h1{
+    text-align: center;
+    font-weight: bolder;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+}
+
+form {
+    background-color: blue;
+}
+
+form button{
+    background-color: blue;
+    color: white;
+    text-align: center;
+    min-height: 40px;
+    min-width: 70px;
+    border-radius: 2px;
+    border: 1px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+form button:hover{
+    cursor: pointer;
+    background-color: rgba(0, 162, 255, 0.781);
+}
+
+main {
+    background-color: white;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    min-width: 300px;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
+
+.inputFiels{
+    max-width: 100px;
+    margin-bottom: 30px;
+}
+
+.inputFiels label{
+    display: flex;
+    justify-content: right;
+    margin: 5px;
+    align-items: center;
+}
+
+main label input{
+    margin-left: 10px;
+}
+
+.selectFeaturesAndViewColorContainer{
+    display: flex;
+    align-items: center;
+    gap: 100px;
+}
+
+.selectFeatures{
+    display: flex;
+    align-items: flex-start;
+    height: 120px;
+    gap: 5px;
+}
+
+.selectFeatures label{
+    font-weight: bold;
+}
+
+.selectFeatures select{
+    min-height: 25px;
+    min-width: 130px;
+}
+
+.containerViewColor{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+}
+
+#hexDecimalRGB{
+    display: flex;
+    width: 460px;
+    justify-content: right;
+    right: 70px;
+}
+
+#viewColor{
+    width: 120px;
+    height: 120px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+}
+
+main button{
+    min-width: 150px;
+    min-height: 40px;
+    background-color: white;
+    border-color: black;
+    border-width: 1px;
+    border-radius: 5px;
+    margin: 20px 0 20px 0;
+    transition: transform 0.1s ease-in;
+}
+
+main button{
+    display: block;
+}
+
+main button:hover{
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+.response label{
+    display: block;
+}

@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "xstring": "cpp",
+        "stack": "cpp",
+        "iostream": "cpp",
+        "sstream": "cpp",
+        "algorithm": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "regex": "cpp",
+        "system_error": "cpp",
+        "type_traits": "cpp",
+        "xlocmon": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "xhash": "cpp",
+        "xlocinfo": "cpp",
+        "xtree": "cpp",
+        "ostream": "cpp"
+    }
+}

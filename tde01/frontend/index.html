@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversão</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"> </script>
+</head>
+<header>
+    <h1>CONVERSÃO DE MODELOS DE COR</h1>
+</header>
+<body>
+    <form>
+        <button id="rgbButtonSelect" class="color-button">RGB</button>
+        <button id="hsvButtonSelect" class="color-button">HSV </button>
+        <button id="cmykButtonSelect" class="color-button">CMYK</button>
+    </form>
+
+    <main>
+        <div id="input-fields" class="inputFiels"></div>
+
+        <label for="input-error-message" id="inputErroMSG"></label>
+
+        <label for="hexDecimalRGB" id="hexDecimalRGB"></label>
+        
+        <div class="selectFeaturesAndViewColorContainer">
+            <div class="selectFeatures">
+                <label for="cor-model">Funcionalidades:</label>
+                   <select id="select-features"></select>
+            </div>
+
+            <div class="containerViewColor">
+                <div id="viewColor"></div>
+            </div>
+        </div>   
+
+        <button id="sendButton">Chamar API</button>
+
+        <div id="responseDiv" class="response">
+            <label for="response" id="response">Resposta da conversão</label>
+            <label for="rgbNormalized" id="rgbNormalized">Valor RGB normalizado</label>
+        </div>
+    </main>
+
+</body>
+</html>

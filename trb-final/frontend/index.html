@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manipulação de Imagens</title>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Trabalho final de Processamento de Imagens</h1>
+    </header>
+    <main>
+        <form>
+            <h2>Imagem de Entrada</h2>
+            <input type="file" id="inputImage" name="image">
+            <input type="file" id="inputImage2" name="image">
+        </form>
+        <div>
+            <canvas id="showInputImage"></canvas>
+            <canvas id="showInputImage2"></canvas>
+        </div>
+        <form>
+            <form>
+                <button>Aritmética</button>
+            </form>
+            <select name="selectFeatures" id="selectFeatures">
+                <option value="addValue">Adicionar</option>
+                <option value="subtValue">Subtrair</option>
+                <option value="grayScale">Converter para 8 bit</option>
+                <option value="1bit">Converter para 1 bit</option>
+                <option value="addImages">Adicione 2 imagens</option>
+                <option value="subtImages">Subtraia 2 imagens</option>
+            </select>
+        </form>
+        <div>
+            <h2>Imagem de saída</h2>
+            <canvas id="canvas"></canvas>
+        </div>
+        <button id="button">Botão</button>
+    </main>
+    <footer>
+        <p>Trabalho realizado por: <a href="https://github.com/LuizFelipeBuaszczyk" target="_blank">Luiz Felipe Buaszczyk</a></p>
+    </footer>
+</body>
+</html>
