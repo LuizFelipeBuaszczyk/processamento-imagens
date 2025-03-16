@@ -40,6 +40,48 @@ struct pixel{
         
     }
 
+    void subtValue(int addValue){
+        int resultValue;
+
+        resultValue = px.red - addValue;
+        px.red = validPixelValue(resultValue);
+
+        resultValue = px.green - addValue;
+        px.green = validPixelValue(resultValue);
+        
+        resultValue = px.blue - addValue;
+        px.blue = validPixelValue(resultValue);
+        
+    }
+
+    void multValue(int value){
+        int resultValue;
+
+        resultValue = px.red * value;
+        px.red = validPixelValue(resultValue);
+
+        resultValue = px.green * value;
+        px.green = validPixelValue(resultValue);
+        
+        resultValue = px.blue * value;
+        px.blue = validPixelValue(resultValue);
+        
+    }
+
+    void divValue(int value){
+        int resultValue;
+
+        resultValue = px.red / value;
+        px.red = validPixelValue(resultValue);
+
+        resultValue = px.green / value;
+        px.green = validPixelValue(resultValue);
+        
+        resultValue = px.blue / value;
+        px.blue = validPixelValue(resultValue);
+        
+    }
+
     void addPixel(const pixel& pxA, const pixel& pxB){
         int resultValue;
 
@@ -70,22 +112,9 @@ struct pixel{
         px.alpha = 255;
     }
 
+
     void rgbTo8Bit(){
         px.red = (0.2989*px.red) + (0.5870 * px.green) + (0.1140*px.blue);
-    }
-
-    void subtValue(int addValue){
-        int resultValue;
-
-        resultValue = px.red - addValue;
-        px.red = validPixelValue(resultValue);
-
-        resultValue = px.green - addValue;
-        px.green = validPixelValue(resultValue);
-        
-        resultValue = px.blue - addValue;
-        px.blue = validPixelValue(resultValue);
-        
     }
 
     void rgbTo1Bit(int threshold){
@@ -250,22 +279,25 @@ string imgToString(const vector<vector<pixel>>& image, bool is8bit) {
     return imgSTR;
 }
 
-vector<vector<pixel>> addValue(vector<vector<pixel>>& imgMatrix, int value){
+vector<vector<pixel>> arithmeticOperation(vector<vector<pixel>>& imgMatrix, int value, char op){
 
     for(size_t i = 0; i < imgMatrix.size(); i++){
         for(size_t j = 0; j < imgMatrix[i].size(); j++){
-            imgMatrix[i][j].addValue(value);
-        }
-    }
-
-    return imgMatrix;
-}
-
-vector<vector<pixel>> subtValue(vector<vector<pixel>>& imgMatrix, int value){
-
-    for(size_t i = 0; i < imgMatrix.size(); i++){
-        for(size_t j = 0; j < imgMatrix[i].size(); j++){
-            imgMatrix[i][j].subtValue(value);
+            switch (op) {
+            case '+':
+                imgMatrix[i][j].addValue(value);
+                break;
+            case '-':
+                imgMatrix[i][j].subtValue(value);
+                break;
+            case '*':
+                imgMatrix[i][j].multValue(value);
+                break;
+            case '/':
+                imgMatrix[i][j].divValue(value);
+                break;
+            }
+            
         }
     }
 
@@ -320,7 +352,17 @@ vector<vector<pixel>> subtImages(vector<vector<pixel>>& imgA, vector<vector<pixe
     return imgResult;
 }
 
+bool validOperationWith2Images (vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
 
+    if(imgA.empty() || imgB.empty()){
+        return false;
+    }
+    else if((imgA.size() != imgB.size()) || (imgA[0].size() !=  imgB[0].size())){
+        return false;
+    }
+
+    return true;
+}
 
 int main() {
    httplib::Server svr;
@@ -338,7 +380,7 @@ int main() {
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
-    img = addValue(img, value);
+    img = arithmeticOperation(img, value, '+');
 
     string responseIMG = imgToString(img, false);
 
@@ -354,7 +396,39 @@ int main() {
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
-    img = subtValue(img, value);
+    img = arithmeticOperation(img, value, '-');
+
+    string responseIMG = imgToString(img, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/process/mult", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("value")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+    int value = stoi(req.get_param_value("value"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    img = arithmeticOperation(img, value, '*');
+
+    string responseIMG = imgToString(img, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/process/div", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("value")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+    int value = stoi(req.get_param_value("value"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    img = arithmeticOperation(img, value, '/');
 
     string responseIMG = imgToString(img, false);
 
@@ -403,14 +477,19 @@ int main() {
     vector<string> jsonIMG = separeJsonImages(body);
     vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
     vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
-    vector<vector<pixel>> result = subtImages(imgA, imgB);
+    
+    if(validOperationWith2Images(imgA, imgB)){
+        vector<vector<pixel>> result = subtImages(imgA, imgB);
 
-    string responseIMG = imgToString(result, false);
-
-    res.set_content(responseIMG, "application/json");
+        string responseIMG = imgToString(result, false);
+    
+        res.set_content(responseIMG, "application/json");
+    }
+    else{
+        res.set_content("Images are different sizes", "application/json");
+    }
+   
   });
-
-
 
    svr.listen("localhost", 8080);
    return 0;

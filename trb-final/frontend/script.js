@@ -30,6 +30,7 @@ function loadImageToCanvas(inputId, canvasId) {
 }
 
 document.getElementById("button").addEventListener("click", executeFeature);
+document.getElementById("arithmeticButton").addEventListener("click", updateFeature('arithmetic'));
 
 function transformIMGtoMATRIX(canvas) {
     var ctx = canvas.getContext('2d');
@@ -85,7 +86,6 @@ function drawImage(imageData){
     }
 
     ctx.putImageData(imageDataObj, 0, 0);   
-      //ctx.drawImage(img, 0, 0);   // Desenhar a imagem no canvas
 }
 
 function draw8bitImage(imageData){
@@ -113,16 +113,34 @@ function draw8bitImage(imageData){
     ctx.putImageData(imageDataObj, 0, 0);   
 }
 
+function updateFeature(selectedOption){
+    const selectOptions = document.getElementById("selectFeatures");
+
+    switch (selectedOption){
+        case 'arithmetic':
+        selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
+                                    <option value="subtValue">Subtrair</option>
+                                    <option value="multValue">Multiplicação</option>
+                                    <option value="divValue">Divisão</option>`;
+        break;
+    }
+}
+
 function executeFeature(){
     const selected = document.getElementById("selectFeatures").value;
 
     switch (selected) {
         case('addValue'):
-            addValueToIMG();
+            operationValueToIMG('+', 100);
             break;
-
         case('subtValue'):
-            subtValueToIMG();
+            operationValueToIMG('-', 100);
+            break;
+        case('multValue'):
+            operationValueToIMG('*', 2);
+            break;
+        case('divValue'):
+            operationValueToIMG('/', 2);
             break;
         case('grayScale'):
             convertIMGtoGrayScale();
@@ -139,45 +157,46 @@ function executeFeature(){
     }
 }
 
-function addValueToIMG(){
+function operationValueToIMG(op, value){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
-    const value = 100;
 
     if(false){
 
     } else{
-        fetch(`http://localhost:8080/process/add?value=${value}`, {
-            method: 'POST',
-            body: matrixJSON
-        })
-        .then(response => response.json())
-        .then(data => {
-            drawImage(data);
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-        });
-    }
-}
+        let endpoint;
 
-function subtValueToIMG(){
-    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
-    const value = 100;
+        console.log(op);
 
-    if(false){
+        switch (op) {//Verify operation
+            case '+':
+                endpoint = `http://localhost:8080/process/add?value=${value}`;
+                break;
+            case '-':
+                endpoint = `http://localhost:8080/process/subt?value=${value}`;
+                break;
+            case '*':
+                endpoint = `http://localhost:8080/process/mult?value=${value}`;
+                break;
+            case '/':
+                endpoint = `http://localhost:8080/process/div?value=${value}`;
+                break;
+            default:
+                endpoint = undefined;
+        }
 
-    } else{
-        fetch(`http://localhost:8080/process/subt?value=${value}`, {
-            method: 'POST',
-            body: matrixJSON
-        })
-        .then(response => response.json())
-        .then(data => {
-            drawImage(data);
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-        });
+        if(endpoint){
+            fetch(endpoint, {
+                method: 'POST',
+                body: matrixJSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                drawImage(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
     }
 }
 

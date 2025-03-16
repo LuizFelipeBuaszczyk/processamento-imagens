@@ -1,1 +1,1 @@
-g++ -o api main.cpp -I"../tde01/lib/vcpkg/installed/x64-windows/include" -L"../tde01/lib/vcpkg/installed/x64-windows/lib" -pthread
+g++ -o api main.cpp -I"../../vcpkg/installed/x64-windows/include" -L"../../vcpkg/installed/x64-windows/lib" -pthread
