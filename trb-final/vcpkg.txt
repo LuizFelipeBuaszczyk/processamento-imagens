@@ -1,0 +1,4 @@
+-git clone https://github.com/microsoft/vcpkg.git
+-Entrar na pasta vcpkg
+-Iniciar bootstrap
+-vcpkg install cpp-httplib
