@@ -1,4 +1,5 @@
 var rgb = {r: 0, g: 0, b: 0, a:255}
+var selectedFeature;
 
 
 document.getElementById('inputImage').addEventListener('change', loadImageToCanvas('inputImage','showInputImage'));
@@ -31,6 +32,9 @@ function loadImageToCanvas(inputId, canvasId) {
 
 document.getElementById("button").addEventListener("click", executeFeature);
 document.getElementById("arithmeticButton").addEventListener("click", updateFeature('arithmetic'));
+document.getElementById("arithmeticWith2images").addEventListener("change", function(){
+    updateFeature('arithmetic')
+});
 
 function transformIMGtoMATRIX(canvas) {
     var ctx = canvas.getContext('2d');
@@ -115,47 +119,65 @@ function draw8bitImage(imageData){
 
 function updateFeature(selectedOption){
     const selectOptions = document.getElementById("selectFeatures");
+    selectedFeature = selectedOption;
 
     switch (selectedOption){
         case 'arithmetic':
-        selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
-                                    <option value="subtValue">Subtrair</option>
-                                    <option value="multValue">Multiplicação</option>
-                                    <option value="divValue">Divisão</option>`;
+            const realizeArithmeticWith2IMG = document.getElementById("arithmeticWith2images").checked;
+
+            if(realizeArithmeticWith2IMG){
+                selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
+                                            <option value="subtValue">Subtrair</option>`;
+            }else {
+                selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
+                                            <option value="subtValue">Subtrair</option>
+                                            <option value="multValue">Multiplicação</option>
+                                            <option value="divValue">Divisão</option>`;
+            }
         break;
+
     }
 }
 
 function executeFeature(){
     const selected = document.getElementById("selectFeatures").value;
+    const arithmeticWith2images = document.getElementById("arithmeticWith2images").checked;
 
-    switch (selected) {
-        case('addValue'):
-            operationValueToIMG('+', 100);
-            break;
-        case('subtValue'):
-            operationValueToIMG('-', 100);
-            break;
-        case('multValue'):
-            operationValueToIMG('*', 2);
-            break;
-        case('divValue'):
-            operationValueToIMG('/', 2);
-            break;
-        case('grayScale'):
-            convertIMGtoGrayScale();
-            break;
-        case('1bit'):
-            convertIMGto1Bit();
-            break;
-        case('addImages'):
-            addImages();
-            break;
-        case('subtImages'):
-            subtImages();
-            break;
+
+    switch(selectedFeature){
+        case 'arithmetic':
+            if(arithmeticWith2images){
+                switch (selected) {
+                    case('addValue'):
+                        operationWith2Images('+');
+                        break;
+                    case('subtValue'):
+                        subtImages('-');
+                        break;
+                }
+            }else {
+                switch(selected){
+                    case('addValue'):
+                        operationValueToIMG('+', 100);
+                        break;
+                    case('subtValue'):
+                        operationValueToIMG('-', 100);
+                        break;
+                    case('multValue'):
+                        operationValueToIMG('*', 2);
+                        break;
+                    case('divValue'):
+                        operationValueToIMG('/', 2);
+                        break;
+                }
+            }
     }
+    
+    //convertIMGto1Bit();
+    //convertIMGtoGrayScale();          
+        
 }
+
 
 function operationValueToIMG(op, value){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
@@ -164,8 +186,6 @@ function operationValueToIMG(op, value){
 
     } else{
         let endpoint;
-
-        console.log(op);
 
         switch (op) {//Verify operation
             case '+':
@@ -284,5 +304,42 @@ function subtImages(){
         .catch(error => {
             console.error('Erro:', error);
         });
+    }
+}
+
+function operationWith2Images(op){
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const matrixJSON2 = transformIMGtoMATRIX(document.getElementById('showInputImage2'));
+    json = matrixJSON + '\n' + 'S' + matrixJSON2;
+
+    if(false){
+
+    }else{
+        let endpoint;
+        
+        switch (op){
+            case '+':
+                endpoint = `http://localhost:8080/add`;
+                break;
+            case '-':
+                endpoint = `http://localhost:8080/subt`;
+                break;
+            default:
+                endpoint = undefined;
+        }
+
+        if(endpoint) {
+            fetch(endpoint, {
+                method: 'POST',
+                body: json
+            })
+            .then(response => response.json())
+            .then(data => {
+                drawImage(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }        
     }
 }
