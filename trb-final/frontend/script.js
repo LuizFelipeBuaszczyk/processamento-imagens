@@ -3,6 +3,7 @@ var selectedFeature;
 
 
 document.getElementById('inputImage').addEventListener('change', loadImageToCanvas('inputImage','showInputImage'));
+
 document.getElementById('inputImage2').addEventListener('change', loadImageToCanvas('inputImage2','showInputImage2'));
 
 function loadImageToCanvas(inputId, canvasId) {
@@ -17,11 +18,11 @@ function loadImageToCanvas(inputId, canvasId) {
                     var ctx = canvas.getContext('2d');
 
                     // Ajusta o tamanho do canvas para a imagem
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    canvas.width = 250;
+                    canvas.height = 250;
 
                     // Desenha a imagem no canvas
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                 };
                 img.src = e.target.result;
             };
@@ -30,7 +31,8 @@ function loadImageToCanvas(inputId, canvasId) {
     });
 }
 
-document.getElementById("button").addEventListener("click", executeFeature);
+document.getElementById("processButton").addEventListener("click", executeFeature);
+document.getElementById("convertButton").addEventListener("click", executeConvert);
 document.getElementById("arithmeticButton").addEventListener("click", updateFeature('arithmetic'));
 document.getElementById("arithmeticWith2images").addEventListener("change", function(){
     updateFeature('arithmetic')
@@ -171,13 +173,21 @@ function executeFeature(){
                         break;
                 }
             }
-    }
-    
-    //convertIMGto1Bit();
-    //convertIMGtoGrayScale();          
-        
+    }       
 }
 
+function executeConvert(){
+    const selected = document.getElementById("selectConvertion").value;
+    
+    switch(selected){
+        case('grayScale'):
+            convertIMGtoGrayScale()
+            break;
+        case('1bit'):
+            convertIMGto1Bit()
+            break;
+    }
+}
 
 function operationValueToIMG(op, value){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));

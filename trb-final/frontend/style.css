@@ -23,118 +23,70 @@ header h1{
     text-shadow: 1px 1px 1px black;
 }
 
-form {
-    background-color: blue;
-}
-
-form button{
-    background-color: blue;
-    color: white;
-    text-align: center;
-    min-height: 40px;
-    min-width: 70px;
-    border-radius: 2px;
-    border: 1px;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-form button:hover{
-    cursor: pointer;
-    background-color: rgba(0, 162, 255, 0.781);
-}
-
 main {
     background-color: white;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
-    min-width: 300px;
-    max-width: 600px;
+    min-width: 1000px;
+    max-width: 1500px;
     margin: auto;
     padding: 20px;
 }
 
-.inputFiels{
-    max-width: 100px;
-    margin-bottom: 30px;
-}
-
-.inputFiels label{
-    display: flex;
-    justify-content: right;
-    margin: 5px;
-    align-items: center;
-}
-
-main label input{
-    margin-left: 10px;
-}
-
-.selectFeaturesAndViewColorContainer{
-    display: flex;
-    align-items: center;
-    gap: 100px;
-}
-
-.selectFeatures{
+.container{
+    min-width: 600px;
+    max-width: 1500px;
+    height: 350px;
     display: flex;
     align-items: flex-start;
-    height: 120px;
-    gap: 5px;
+    gap: 10px;
 }
 
-.selectFeatures label{
-    font-weight: bold;
+.inputImages{
+    display: inline-block;
+    margin-right: 40px;
+    max-width: 650px;
 }
 
-.selectFeatures select{
-    min-height: 25px;
-    min-width: 130px;
-}
-
-.containerViewColor{
+.showInputImages {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 120px;
-    height: 120px;
+    gap: 55px;
 }
 
-#hexDecimalRGB{
+.imgStyle {
+    border: 1px solid black;
+}
+
+section{
     display: flex;
-    width: 460px;
-    justify-content: right;
-    right: 70px;
+    margin-right: 20px;
 }
 
-#viewColor{
-    width: 120px;
-    height: 120px;
-    border-style: solid;
-    border-color: black;
-    border-width: 1px;
+.featureButtons{
+    padding: 2px;
+    border: 1px solid black;
+    display: inline-block;
 }
 
-main button{
-    min-width: 150px;
-    min-height: 40px;
-    background-color: white;
-    border-color: black;
-    border-width: 1px;
-    border-radius: 5px;
-    margin: 20px 0 20px 0;
-    transition: transform 0.1s ease-in;
-}
-
-main button{
+.featureButtons button {
     display: block;
+    background-color: blue;
+    color: white;
+    text-align: center;
+    min-height: 40px;
+    width: 100px;
+    border-radius: 2px;
+    border: 1px solid black;
+    font-weight: bold;
+    font-size: 15px;
+    padding: 2px;
 }
 
-main button:hover{
+.featureButtons button:hover{
     cursor: pointer;
-    transform: scale(1.05);
+    background-color: rgba(0, 162, 255, 0.781);
 }
 
-.response label{
+section div button{
     display: block;
 }
