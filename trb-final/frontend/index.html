@@ -5,44 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manipulação de Imagens</title>
     <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <h1>Trabalho final de Processamento de Imagens</h1>
     </header>
+
     <main>
-        <form>
-            <h2>Imagem de Entrada</h2>
-            <input type="file" id="inputImage" name="image">
-            <input type="file" id="inputImage2" name="image">
-        </form>
-        <div>
-            <canvas id="showInputImage"></canvas>
-            <canvas id="showInputImage2"></canvas>
+        <div class="container">
+            <div class="inputImages">
+                <form>
+                    <h2>Imagem de Entrada</h2>
+                    <input type="file" id="inputImage" name="image">
+                    <input type="file" id="inputImage2" name="image">
+                </form>
+                <div class="showInputImages">
+                    <canvas id="showInputImage"  class="imgStyle" width="250" height="250"></canvas>
+                    <canvas id="showInputImage2" class="imgStyle" width="250" height="250"></canvas>
+                </div>
+            </div>
+            <section>
+                <form class="featureButtons">
+                    <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
+                    <button value="logic" id="logicButton" class="featureButton">Lógica</button>
+                    <button value="invert" id="invertButton" class="featureButton">Inverção</button>
+                    <button value="diff" id="diffButton" class="featureButton">Diferença</button>
+                </form>
+                <div>
+                    <select name="selectFeatures" id="selectFeatures">
+                        <option value="addValue">Adicionar</option>
+                        <option value="subtValue">Subtrair</option>
+                        <option value="multValue">Multiplicação</option>
+                        <option value="divValue">Divisão</option>     
+                    </select>
+                    <input type= "checkbox" id="arithmeticWith2images">
+                    <form id="rangeForm"></form>
+                    <label type="text">2 imagens</label>
+                    <button id="processButton">Processar</button>
+                </div>
+            </section>
+            <div>
+                <h2>Imagem de saída</h2>
+                <canvas id="canvas" width="500" height="500"></canvas>
+            </div>
         </div>
-        <form>
-            <form>
-                <button value="arithmetic" id="arithmeticButton">Aritmética</button>
-            </form>
-            <select name="selectFeatures" id="selectFeatures">
-                <option value="addValue">Adicionar</option>
-                <option value="subtValue">Subtrair</option>
-                <option value="multValue">Multiplicação</option>
-                <option value="divValue">Divisão</option>
+        <div>
+            <p>Opções para converter a primeira imagem</p>
+            <select name="selectConvertion" id="selectConvertion">
                 <option value="grayScale">Converter para 8 bit</option>
                 <option value="1bit">Converter para 1 bit</option>
-                <option value="addImages">Adicione 2 imagens</option>
-                <option value="subtImages">Subtraia 2 imagens</option>
             </select>
-            <input type= "checkbox" id="arithmeticWith2images">
-            <label type="text">Realizar cálculo com 2 imagens</label>
-        </form>
-        <div>
-            <h2>Imagem de saída</h2>
-            <canvas id="canvas"></canvas>
+            <button id="convertButton">Converter</button>
         </div>
-        <button id="button">Botão</button>
     </main>
+
     <footer>
         <p>Trabalho realizado por: <a href="https://github.com/LuizFelipeBuaszczyk" target="_blank">Luiz Felipe Buaszczyk</a></p>
     </footer>
