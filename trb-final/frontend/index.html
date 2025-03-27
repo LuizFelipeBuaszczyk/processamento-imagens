@@ -27,19 +27,20 @@
             </div>
             <section>
                 <form class="featureButtons">
-                    <button value="arithmetic" id="arithmeticButton">Aritmética</button>
-                    <button value="logic" id="logicButton">Lógica</button>
+                    <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
+                    <button value="logic" id="logicButton" class="featureButton">Lógica</button>
+                    <button value="invert" id="invertButton" class="featureButton">Inverção</button>
+                    <button value="diff" id="diffButton" class="featureButton">Diferença</button>
                 </form>
                 <div>
                     <select name="selectFeatures" id="selectFeatures">
                         <option value="addValue">Adicionar</option>
                         <option value="subtValue">Subtrair</option>
                         <option value="multValue">Multiplicação</option>
-                        <option value="divValue">Divisão</option>
-                        <option value="addImages">Adicione 2 imagens</option>
-                        <option value="subtImages">Subtraia 2 imagens</option>
+                        <option value="divValue">Divisão</option>     
                     </select>
                     <input type= "checkbox" id="arithmeticWith2images">
+                    <form id="rangeForm"></form>
                     <label type="text">2 imagens</label>
                     <button id="processButton">Processar</button>
                 </div>

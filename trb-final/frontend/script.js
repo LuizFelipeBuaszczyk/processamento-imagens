@@ -1,10 +1,14 @@
 var rgb = {r: 0, g: 0, b: 0, a:255}
 var selectedFeature;
 
-
 document.getElementById('inputImage').addEventListener('change', loadImageToCanvas('inputImage','showInputImage'));
 
 document.getElementById('inputImage2').addEventListener('change', loadImageToCanvas('inputImage2','showInputImage2'));
+
+
+//ARRUMAR ESSA PORRA DESSE RANGE
+document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 123</label>
+                                                    <input type= "range" id="range" min="0" max="255">`;
 
 function loadImageToCanvas(inputId, canvasId) {
     document.getElementById(inputId).addEventListener('change', function(event) {
@@ -33,10 +37,25 @@ function loadImageToCanvas(inputId, canvasId) {
 
 document.getElementById("processButton").addEventListener("click", executeFeature);
 document.getElementById("convertButton").addEventListener("click", executeConvert);
-document.getElementById("arithmeticButton").addEventListener("click", updateFeature('arithmetic'));
-document.getElementById("arithmeticWith2images").addEventListener("change", function(){
-    updateFeature('arithmetic')
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.featureButton').forEach(button => {
+        button.addEventListener('click',function(event){
+            event.preventDefault();
+            selectedFeature = event.target.id.replace('ButtonSelect','')
+            updateFeature(selectedFeature);
+        });
+    });
 });
+
+document.getElementById("arithmeticWith2images").addEventListener("change", function(){
+    updateFeature('arithmetic');
+    showRange();
+});
+
+document.addEventListener('input', () => {
+    document.getElementById('labelRange').textContent = "Valor: " + document.getElementById('range').value;
+});   
 
 function transformIMGtoMATRIX(canvas) {
     var ctx = canvas.getContext('2d');
@@ -124,7 +143,7 @@ function updateFeature(selectedOption){
     selectedFeature = selectedOption;
 
     switch (selectedOption){
-        case 'arithmetic':
+        case 'arithmeticButton':
             const realizeArithmeticWith2IMG = document.getElementById("arithmeticWith2images").checked;
 
             if(realizeArithmeticWith2IMG){
@@ -136,18 +155,34 @@ function updateFeature(selectedOption){
                                             <option value="multValue">Multiplicação</option>
                                             <option value="divValue">Divisão</option>`;
             }
-        break;
+            break;
+        case 'invertButton':
+            selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
+                                        <option value="vertical">Vertical</option>`;
+            break;
+        case 'diffButton':
+            selectOptions.innerHTML =  ``;
+            break;
 
+    }
+}
+
+function showRange(){
+    const isCheck = document.getElementById("arithmeticWith2images").checked;
+    if (isCheck){
+        document.getElementById('rangeForm').innerHTML = ``;
+    }else {
+        document.getElementById('rangeForm').innerHTML = `  <label class = "label" id= "labelRange">Valor: </label>
+                                                            <input type= "range" id="range" min="0" max="255">`;                                    
     }
 }
 
 function executeFeature(){
     const selected = document.getElementById("selectFeatures").value;
-    const arithmeticWith2images = document.getElementById("arithmeticWith2images").checked;
-
 
     switch(selectedFeature){
-        case 'arithmetic':
+        case 'arithmeticButton':
+            const arithmeticWith2images = document.getElementById("arithmeticWith2images").checked;
             if(arithmeticWith2images){
                 switch (selected) {
                     case('addValue'):
@@ -158,21 +193,36 @@ function executeFeature(){
                         break;
                 }
             }else {
+                const value = document.getElementById('range').value;
+
                 switch(selected){
                     case('addValue'):
-                        operationValueToIMG('+', 100);
+                        operationValueToIMG('+', value);
                         break;
                     case('subtValue'):
-                        operationValueToIMG('-', 100);
+                        operationValueToIMG('-', value);
                         break;
                     case('multValue'):
-                        operationValueToIMG('*', 2);
+                        operationValueToIMG('*', value);
                         break;
                     case('divValue'):
-                        operationValueToIMG('/', 2);
+                        operationValueToIMG('/', value);
                         break;
                 }
             }
+        case 'invertButton':
+            switch(selected){
+                case('horizontal'):
+                    invertImage('h');
+                    break;
+                case('vertical'):
+                    invertImage('v')
+                    break;
+            }
+            break;
+        case 'diffButton':
+            operationWith2Images('d');
+            break;
     }       
 }
 
@@ -272,6 +322,27 @@ function convertIMGto1Bit(){
     }
 }
 
+function invertImage(op){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+
+    if(false){
+
+    } else{
+        endpoint = op == 'h' ? `http://localhost:8080/invert/horizontal` : `http://localhost:8080/invert/vertical`; 
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {
+            drawImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
+    }
+}
+
 function addImages(){
     const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
     const matrixJSON2 = transformIMGtoMATRIX(document.getElementById('showInputImage2'));
@@ -290,7 +361,7 @@ function addImages(){
             drawImage(data);
         })
         .catch(error => {
-            console.error('Erro:', error);
+            console.error('Erro: ', error);
         });
     }
 }
@@ -334,6 +405,8 @@ function operationWith2Images(op){
             case '-':
                 endpoint = `http://localhost:8080/subt`;
                 break;
+            case 'd':
+                endpoint = `http://localhost:8080/diference`
             default:
                 endpoint = undefined;
         }

@@ -112,6 +112,21 @@ struct pixel{
         px.alpha = 255;
     }
 
+    void diference(const pixel& pxA, const pixel& pxB){
+        pixel pxC, pxD;
+        pxC.subtPixel(pxA, pxB);
+        pxD.subtPixel(pxB, pxA);
+        addPixel(pxC, pxD);
+        cout << px.blue << " " << px.green << " " << px.red;
+    }
+
+    void setPixel(const pixel& pxl){
+        px.red = pxl.px.red;
+        px.green = pxl.px.green;
+        px.blue = pxl.px.blue;
+        px.alpha = pxl.px.alpha;
+    }
+
 
     void rgbTo8Bit(){
         px.red = (0.2989*px.red) + (0.5870 * px.green) + (0.1140*px.blue);
@@ -326,6 +341,21 @@ vector<vector<pixel>> convertTo1Bit(vector<vector<pixel>>& imgMatrix, int thresh
     return imgMatrix;
 }
 
+
+vector<vector<pixel>> invertImage(vector<vector<pixel>>& imgMatrix, char op){
+    for(size_t i = 0; i < imgMatrix.size(); i++){
+        for(size_t j = 0; j < imgMatrix[i].size()/2; j++){
+            if (op == 'h'){
+                swap(imgMatrix[i][j], imgMatrix[i][(imgMatrix[i].size()- 1 - j)]);
+            }else if(op == 'v'){
+                swap(imgMatrix[j][i], imgMatrix[imgMatrix.size()- 1 - j][i]);
+            }
+        }
+    }
+
+    return imgMatrix;
+}
+
 vector<vector<pixel>> addImages(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
     vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
     
@@ -350,6 +380,20 @@ vector<vector<pixel>> subtImages(vector<vector<pixel>>& imgA, vector<vector<pixe
     }
 
     return imgResult;
+}
+
+vector<vector<pixel>> diferenceWith2Images(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
+    vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
+
+    for(size_t i = 0; i < imgA.size(); i++){
+        for(size_t j = 0; j < imgA[i].size(); j++){
+           imgResult[i][j].diference(imgA[i][j].px, imgB[i][j].px);
+        }
+
+    }
+
+    return imgResult;
+
 }
 
 bool validOperationWith2Images (vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
@@ -458,6 +502,30 @@ int main() {
     res.set_content(responseIMG, "application/json");
   });
 
+  svr.Post("/invert/horizontal", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    img = invertImage(img, 'h');
+
+    string responseIMG = imgToString(img, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/invert/vertical", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    img = invertImage(img, 'v');
+
+    string responseIMG = imgToString(img, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+
+
   svr.Post("/add", [](const httplib::Request& req, httplib::Response& res){
 
     string body = req.body;
@@ -488,7 +556,25 @@ int main() {
     else{
         res.set_content("Images are different sizes", "application/json");
     }
-   
+  });
+
+  svr.Post("/diference", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<string> jsonIMG = separeJsonImages(body);
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    if(validOperationWith2Images(imgA, imgB)){
+        vector<vector<pixel>> result = diferenceWith2Images(imgA, imgB);
+
+        string responseIMG = imgToString(result, false);
+    
+        res.set_content(responseIMG, "application/json");    
+    }else {
+        res.set_content("Images are different sizes", "application/json");
+    }
+
   });
 
    svr.listen("localhost", 8080);

@@ -90,3 +90,8 @@ section{
 section div button{
     display: block;
 }
+
+.label{
+    display: block;
+    font-weight: bold;
+}
