@@ -95,3 +95,8 @@ section div button{
     display: block;
     font-weight: bold;
 }
+
+#canvas {
+    margin: 20px;
+    border: 1px solid black;
+}

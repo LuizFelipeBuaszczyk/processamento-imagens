@@ -112,14 +112,6 @@ struct pixel{
         px.alpha = 255;
     }
 
-    void diference(const pixel& pxA, const pixel& pxB){
-        pixel pxC, pxD;
-        pxC.subtPixel(pxA, pxB);
-        pxD.subtPixel(pxB, pxA);
-        addPixel(pxC, pxD);
-        cout << px.blue << " " << px.green << " " << px.red;
-    }
-
     void setPixel(const pixel& pxl){
         px.red = pxl.px.red;
         px.green = pxl.px.green;
@@ -384,10 +376,13 @@ vector<vector<pixel>> subtImages(vector<vector<pixel>>& imgA, vector<vector<pixe
 
 vector<vector<pixel>> diferenceWith2Images(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
     vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
-
+    
     for(size_t i = 0; i < imgA.size(); i++){
         for(size_t j = 0; j < imgA[i].size(); j++){
-           imgResult[i][j].diference(imgA[i][j].px, imgB[i][j].px);
+            pixel pxC, pxD;
+            pxC.subtPixel(imgA[i][j].px, imgB[i][j].px);
+            pxD.subtPixel(imgB[i][j].px, imgA[i][j].px);
+            imgResult[i][j].addPixel(pxC.px, pxD.px);
         }
 
     }
