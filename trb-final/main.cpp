@@ -112,6 +112,7 @@ struct pixel{
         px.alpha = 255;
     }
 
+<<<<<<< HEAD
     void logicAND(const pixel& pxA, const pixel& pxB){
         if((pxA.px.red == 255) && (pxB.px.red == 255)){
             px.red = 255;
@@ -169,6 +170,8 @@ struct pixel{
         px.alpha = 255;
     }
 
+=======
+>>>>>>> development
     void setPixel(const pixel& pxl){
         px.red = pxl.px.red;
         px.green = pxl.px.green;

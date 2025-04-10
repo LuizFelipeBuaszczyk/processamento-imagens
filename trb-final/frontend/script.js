@@ -5,7 +5,7 @@ document.getElementById('inputImage').addEventListener('change', loadImageToCanv
 
 document.getElementById('inputImage2').addEventListener('change', loadImageToCanvas('inputImage2','showInputImage2'));
 
-document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 128</label>
+document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 123</label>
                                                     <input type= "range" id="range" min="0" max="255">`;
 
 document.getElementById('selectConvertion').addEventListener('change', function() {
