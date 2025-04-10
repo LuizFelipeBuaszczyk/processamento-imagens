@@ -112,12 +112,61 @@ struct pixel{
         px.alpha = 255;
     }
 
-    void diference(const pixel& pxA, const pixel& pxB){
-        pixel pxC, pxD;
-        pxC.subtPixel(pxA, pxB);
-        pxD.subtPixel(pxB, pxA);
-        addPixel(pxC, pxD);
-        cout << px.blue << " " << px.green << " " << px.red;
+    void logicAND(const pixel& pxA, const pixel& pxB){
+        if((pxA.px.red == 255) && (pxB.px.red == 255)){
+            px.red = 255;
+        }else{
+            px.red = 0;
+        }  
+    }
+
+    void logicOR(const pixel& pxA, const pixel& pxB){
+        if((pxA.px.red == 255) || (pxB.px.red == 255)){
+            px.red = 255;
+        }else{
+            px.red = 0;
+        }
+    }
+
+    void logicXOR(const pixel& pxA, const pixel& pxB){
+        if(pxA.px.red != pxB.px.red){
+            px.red = 255;
+        }else{
+            px.red = 0;
+        }
+    }
+
+    void logicNOT(const pixel& pxl){
+        if(pxl.px.red == 255){
+            px.red = 0;
+        }else {
+            px.red = 255;
+        }
+    }
+
+    void blending(const pixel& pxA, const pixel& pxB, float value){
+        int resultValue;
+        resultValue= value * pxA.px.red + (1-value) * pxB.px.red;
+        validPixelValue(resultValue);
+        px.red = resultValue;
+
+        resultValue = value * pxA.px.green + (1-value) * pxB.px.green;
+        validPixelValue(resultValue);
+        px.green = resultValue;
+
+        resultValue = value * pxA.px.blue + (1-value) * pxB.px.blue;
+        validPixelValue(resultValue);
+        px.blue = resultValue;
+
+        px.alpha = 255;
+    }
+
+    void linearAverage(const pixel& pxA, const pixel& pxB){
+        addPixel(pxA,pxB);
+        px.red /= 2;
+        px.green /= 2;
+        px.blue /= 2;
+        px.alpha = 255;
     }
 
     void setPixel(const pixel& pxl){
@@ -125,6 +174,14 @@ struct pixel{
         px.green = pxl.px.green;
         px.blue = pxl.px.blue;
         px.alpha = pxl.px.alpha;
+    }
+
+    void equalizeHistogram(int newPixelValue){
+        
+
+        uint8_t pixelValue = validPixelValue(newPixelValue);
+
+        px.red = pixelValue;
     }
 
 
@@ -334,7 +391,7 @@ vector<vector<pixel>> convertTo1Bit(vector<vector<pixel>>& imgMatrix, int thresh
     for(size_t i = 0; i < imgMatrix.size(); i++){
         for(size_t j = 0; j < imgMatrix[i].size(); j++){
             imgMatrix[i][j].rgbTo8Bit();
-            imgMatrix[i][j].rgbTo1Bit(100);
+            imgMatrix[i][j].rgbTo1Bit(threshold);
         }
     }
 
@@ -384,10 +441,13 @@ vector<vector<pixel>> subtImages(vector<vector<pixel>>& imgA, vector<vector<pixe
 
 vector<vector<pixel>> diferenceWith2Images(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
     vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
-
+    
     for(size_t i = 0; i < imgA.size(); i++){
         for(size_t j = 0; j < imgA[i].size(); j++){
-           imgResult[i][j].diference(imgA[i][j].px, imgB[i][j].px);
+            pixel pxC, pxD;
+            pxC.subtPixel(imgA[i][j].px, imgB[i][j].px);
+            pxD.subtPixel(imgB[i][j].px, imgA[i][j].px);
+            imgResult[i][j].addPixel(pxC.px, pxD.px);
         }
 
     }
@@ -395,6 +455,110 @@ vector<vector<pixel>> diferenceWith2Images(vector<vector<pixel>>& imgA, vector<v
     return imgResult;
 
 }
+
+vector<vector<pixel>> logicWith2Image(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB, char op){
+    vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
+    
+    for(size_t i = 0; i < imgA.size(); i++){
+        for(size_t j = 0; j < imgA[i].size(); j++){
+            switch (op){
+                case 'a':
+                    imgResult[i][j].logicAND(imgA[i][j].px, imgB[i][j]);
+                    break;
+                case 'o':
+                    imgResult[i][j].logicOR(imgA[i][j].px, imgB[i][j]);
+                    break;
+                case 'x':
+                    imgResult[i][j].logicXOR(imgA[i][j].px, imgB[i][j]);
+                    break;
+            }
+            
+        }
+
+    }
+
+    return imgResult;
+
+}
+
+
+
+vector<vector<pixel>> logicNOT(vector<vector<pixel>>& img){
+    vector<vector<pixel>> imgResult(img.size(), vector<pixel>(img[0].size()));
+    
+    for(size_t i = 0; i < img.size(); i++){
+        for(size_t j = 0; j < img[i].size(); j++){
+            imgResult[i][j].logicNOT(img[i][j].px);         
+        }
+
+    }
+
+    return imgResult;
+
+}
+
+vector<vector<pixel>> blending(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB, float value){
+    vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
+    
+    for(size_t i = 0; i < imgA.size(); i++){
+        for(size_t j = 0; j < imgA[i].size(); j++){
+           imgResult[i][j].blending(imgA[i][j].px, imgB[i][j].px, value);
+        }
+
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> linearAverage(vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
+    vector<vector<pixel>> imgResult(imgA.size(), vector<pixel>(imgA[0].size()));
+    
+    for(size_t i = 0; i < imgA.size(); i++){
+        for(size_t j = 0; j < imgA[i].size(); j++){
+           imgResult[i][j].linearAverage(imgA[i][j].px, imgB[i][j].px);
+        }
+
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
+    int width = img[0].size();
+    int height = img.size();
+    int histogram[256] = {};
+    vector<vector<pixel>> imgResult(height, vector<pixel>(width));
+    
+    for(size_t i = 0; i < img.size(); i++){
+        for(size_t j = 0; j < img[i].size(); j++){
+            img[i][j].rgbTo8Bit();
+            histogram[(int) img[i][j].px.red]++;
+        }
+    }
+
+    int cfd[256] = {};
+    cfd[0] = histogram[0];
+    int newPixelValue[256] = {};
+
+    for (int i=0; i<=255; i++){
+        if(i!=0){
+            cfd[i] = histogram[i]+cfd[i-1];
+        }
+        float tempValue = (static_cast<float>(cfd[i]-cfd[0])/static_cast<float>((width*height)-cfd[0]));
+        newPixelValue[i] = tempValue*255;
+    }
+
+
+    for(size_t i = 0; i < img.size(); i++){
+        for(size_t j = 0; j < img[i].size(); j++){
+            imgResult[i][j].equalizeHistogram(newPixelValue[(int) img[i][j].px.red]);
+        }
+    }
+
+    return imgResult;
+}
+
+
 
 bool validOperationWith2Images (vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
 
@@ -491,10 +655,16 @@ int main() {
   });
 
   svr.Post("/convert/1bit", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("value")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int value = stoi(req.get_param_value("value"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
-    img = convertTo1Bit(img, 100);
+    img = convertTo1Bit(img, value);
 
     string responseIMG = imgToString(img, true);
 
@@ -574,7 +744,156 @@ int main() {
     }else {
         res.set_content("Images are different sizes", "application/json");
     }
+  });
 
+  svr.Post("/logic/and", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<string> jsonIMG = separeJsonImages(body);
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    if(validOperationWith2Images(imgA, imgB)){
+
+        // Convertendo para escala de cinza
+        imgA = convertTo8Bit(imgA);
+        imgB = convertTo8Bit(imgB);
+
+        // Binarizando
+        imgA = convertTo1Bit(imgA, 128);
+        imgB = convertTo1Bit(imgB, 128);
+
+        vector<vector<pixel>> result = logicWith2Image(imgA, imgB, 'a');
+
+        string responseIMG = imgToString(result, true);
+    
+        res.set_content(responseIMG, "application/json");    
+    }else {
+        res.set_content("Images are different sizes", "application/json");
+    }
+  });
+
+  svr.Post("/logic/or", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<string> jsonIMG = separeJsonImages(body);
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    if(validOperationWith2Images(imgA, imgB)){
+
+        // Convertendo para escala de cinza
+        imgA = convertTo8Bit(imgA);
+        imgB = convertTo8Bit(imgB);
+
+        // Binarizando
+        imgA = convertTo1Bit(imgA, 128);
+        imgB = convertTo1Bit(imgB, 128);
+
+        vector<vector<pixel>> result = logicWith2Image(imgA, imgB, 'o');
+
+        string responseIMG = imgToString(result, true);
+    
+        res.set_content(responseIMG, "application/json");    
+    }else {
+        res.set_content("Images are different sizes", "application/json");
+    }
+  });
+
+
+  svr.Post("/logic/xor", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<string> jsonIMG = separeJsonImages(body);
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    if(validOperationWith2Images(imgA, imgB)){
+
+        // Convertendo para escala de cinza
+        imgA = convertTo8Bit(imgA);
+        imgB = convertTo8Bit(imgB);
+
+        // Binarizando
+        imgA = convertTo1Bit(imgA, 128);
+        imgB = convertTo1Bit(imgB, 128);
+
+        vector<vector<pixel>> result = logicWith2Image(imgA, imgB, 'x');
+
+        string responseIMG = imgToString(result, true);
+    
+        res.set_content(responseIMG, "application/json");    
+    }else {
+        res.set_content("Images are different sizes", "application/json");
+    }
+  });
+
+  svr.Post("/logic/not", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    // Convertendo para escala de cinza
+    img = convertTo8Bit(img);
+
+    // Binarizando
+    img = convertTo1Bit(img, 128);
+
+    vector<vector<pixel>> result = logicNOT(img);
+
+    string responseIMG = imgToString(result, true);
+
+    res.set_content(responseIMG, "application/json");    
+  });
+
+  svr.Post("/linear/blending", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("value")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    string body = req.body;
+
+    float value = (stoi(req.get_param_value("value")))/100.00;
+
+    vector<string> jsonIMG = separeJsonImages(body);
+
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    vector<vector<pixel>> result = blending(imgA, imgB, value);
+
+    string responseIMG = imgToString(result, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/linear/average", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+
+    vector<string> jsonIMG = separeJsonImages(body);
+
+    vector<vector<pixel>> imgA = parse_json_pixels(jsonIMG[0]);
+    vector<vector<pixel>> imgB = parse_json_pixels(jsonIMG[1]);
+
+    vector<vector<pixel>> result = linearAverage(imgA, imgB);
+
+    string responseIMG = imgToString(result, false);
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/histogram/equalize", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = equalizeHistogram(img);
+
+    string responseIMG = imgToString(result, true);
+
+    res.set_content(responseIMG, "application/json");
   });
 
    svr.listen("localhost", 8080);

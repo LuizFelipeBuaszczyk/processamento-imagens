@@ -5,10 +5,13 @@ document.getElementById('inputImage').addEventListener('change', loadImageToCanv
 
 document.getElementById('inputImage2').addEventListener('change', loadImageToCanvas('inputImage2','showInputImage2'));
 
-
-//ARRUMAR ESSA PORRA DESSE RANGE
-document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 123</label>
+document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 128</label>
                                                     <input type= "range" id="range" min="0" max="255">`;
+
+document.getElementById('selectConvertion').addEventListener('change', function() {
+   showThresholdRange()
+});
+
 
 function loadImageToCanvas(inputId, canvasId) {
     document.getElementById(inputId).addEventListener('change', function(event) {
@@ -37,6 +40,7 @@ function loadImageToCanvas(inputId, canvasId) {
 
 document.getElementById("processButton").addEventListener("click", executeFeature);
 document.getElementById("convertButton").addEventListener("click", executeConvert);
+document.getElementById('equalizeHistogramButton').addEventListener('click', equalizeHistogram);
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.featureButton').forEach(button => {
@@ -53,9 +57,44 @@ document.getElementById("arithmeticWith2images").addEventListener("change", func
     showRange();
 });
 
-document.addEventListener('input', () => {
-    document.getElementById('labelRange').textContent = "Valor: " + document.getElementById('range').value;
-});   
+if(document.getElementById('range')){
+    document.getElementById('range').addEventListener('input', () => {
+        document.getElementById('labelRange').textContent = "Valor: " + document.getElementById('range').value;
+    });
+}
+
+document.getElementById('saveImage').addEventListener('click', function(){
+    saveImage();
+});
+
+// Função para salvar imagens
+function saveImage(){
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+      
+    const imagemDataURL = canvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.href = imagemDataURL;
+    link.download = 'imagem_canvas.png'; 
+    link.click(); 
+}
+
+function showThresholdRange(){
+    const selected = document.getElementById('selectConvertion').value;
+
+    if(selected == '1bit'){
+        document.getElementById('rangeThreshold').innerHTML = ` <label class = "label" id= "labelRangeConvertion">Valor: 128</label>
+                                                                <input type= "range" id="rangeConvertion" min="0" max="255" oninput="updateConvertLabelValue()">`
+    }else{
+        document.getElementById('rangeThreshold').innerHTML = ``;
+    }
+}
+
+function updateConvertLabelValue(){
+    document.getElementById('labelRangeConvertion').textContent = "Valor: " + document.getElementById('rangeConvertion').value; 
+}
 
 function transformIMGtoMATRIX(canvas) {
     var ctx = canvas.getContext('2d');
@@ -156,6 +195,13 @@ function updateFeature(selectedOption){
                                             <option value="divValue">Divisão</option>`;
             }
             break;
+        case 'logicButton':
+                selectOptions.innerHTML =  `    <option value="and">AND</option>
+                                                <option value="or">OR</option>
+                                                <option value="xor">XOR</option>
+                                                <option value="not">NOT</option>`;
+
+            break;
         case 'invertButton':
             selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
                                         <option value="vertical">Vertical</option>`;
@@ -163,7 +209,10 @@ function updateFeature(selectedOption){
         case 'diffButton':
             selectOptions.innerHTML =  ``;
             break;
-
+        case 'linearButton':
+            selectOptions.innerHTML =  `<option value="average">Média</option>
+                                        <option value="blending">Blending</option>`;
+            break;
     }
 }
 
@@ -210,6 +259,10 @@ function executeFeature(){
                         break;
                 }
             }
+            break;
+        case 'logicButton':
+            logic(selected);
+            break;
         case 'invertButton':
             switch(selected){
                 case('horizontal'):
@@ -223,6 +276,16 @@ function executeFeature(){
         case 'diffButton':
             operationWith2Images('d');
             break;
+        case 'linearButton':
+            switch(selected){
+                case('blending'):
+                    linear('b');
+                    break;
+                case('average'):
+                    linear('a');
+                    break;
+            }
+            break;         
     }       
 }
 
@@ -303,12 +366,12 @@ function convertIMGtoGrayScale(){
 
 function convertIMGto1Bit(){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
-    const value = 100;
+    const value = document.getElementById('rangeConvertion').value;
 
     if(false){
 
     } else{
-        fetch(`http://localhost:8080/convert/1bit`, {
+        fetch(`http://localhost:8080/convert/1bit?value=${value}`, {
             method: 'POST',
             body: matrixJSON
         })
@@ -407,6 +470,7 @@ function operationWith2Images(op){
                 break;
             case 'd':
                 endpoint = `http://localhost:8080/diference`
+                break;
             default:
                 endpoint = undefined;
         }
@@ -424,5 +488,97 @@ function operationWith2Images(op){
                 console.error('Erro:', error);
             });
         }        
+    }
+}
+
+
+function logic(op){
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    if(op!= 'not'){
+        const matrixJSON2 = transformIMGtoMATRIX(document.getElementById('showInputImage2'));
+        json = matrixJSON + '\n' + 'S' + matrixJSON2;
+    }else{
+        json = matrixJSON;
+    }
+    if(false){
+
+    }else{
+        let endpoint;
+        
+        endpoint = `http://localhost:8080/logic/` + op;
+
+        if(endpoint) {
+            fetch(endpoint, {
+                method: 'POST',
+                body: json
+            })
+            .then(response => response.json())
+            .then(data => {
+                draw8bitImage(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }        
+    }
+}
+
+function linear(op){
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const matrixJSON2 = transformIMGtoMATRIX(document.getElementById('showInputImage2'));
+    json = matrixJSON + '\n' + 'S' + matrixJSON2;
+
+    if(false){
+
+    }else{
+        let endpoint;
+        
+        switch (op){
+            case 'b': //Valor personalizado
+                let value = 50;
+                console.log(value)
+                endpoint = `http://localhost:8080/linear/blending?value=${value}`;
+                break;
+            case 'a':
+                endpoint = `http://localhost:8080/linear/average`;
+                break;
+            default:
+                endpoint = undefined;
+        }
+
+        if(endpoint) {
+            fetch(endpoint, {
+                method: 'POST',
+                body: json
+            })
+            .then(response => response.json())
+            .then(data => {
+                drawImage(data);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }        
+    }
+}
+
+function equalizeHistogram(){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+
+    if(false){
+
+    } else{
+        endpoint = `http://localhost:8080/histogram/equalize`; 
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {
+            draw8bitImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
     }
 }

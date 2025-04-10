@@ -31,6 +31,7 @@
                     <button value="logic" id="logicButton" class="featureButton">Lógica</button>
                     <button value="invert" id="invertButton" class="featureButton">Inverção</button>
                     <button value="diff" id="diffButton" class="featureButton">Diferença</button>
+                    <button value="linear" id="linearButton" class="featureButton">Linear</button>
                 </form>
                 <div>
                     <select name="selectFeatures" id="selectFeatures">
@@ -47,7 +48,8 @@
             </section>
             <div>
                 <h2>Imagem de saída</h2>
-                <canvas id="canvas" width="500" height="500"></canvas>
+                <canvas id="canvas" width="250" height="250"></canvas>
+                <button id="saveImage">Salvar Imagem</button>
             </div>
         </div>
         <div>
@@ -56,8 +58,13 @@
                 <option value="grayScale">Converter para 8 bit</option>
                 <option value="1bit">Converter para 1 bit</option>
             </select>
+            <form id="rangeThreshold"> </form>
             <button id="convertButton">Converter</button>
         </div>
+        <div>
+            <button id="equalizeHistogramButton">Equalizar Histograma</button>
+        </div>
+
     </main>
 
     <footer>
