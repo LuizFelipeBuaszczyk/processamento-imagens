@@ -5,12 +5,10 @@ document.getElementById('inputImage').addEventListener('change', loadImageToCanv
 
 document.getElementById('inputImage2').addEventListener('change', loadImageToCanvas('inputImage2','showInputImage2'));
 
-document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 123</label>
+document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 128</label>
                                                     <input type= "range" id="range" min="0" max="255">`;
 
-document.getElementById('selectConvertion').addEventListener('change', function() {
-   showThresholdRange()
-});
+document.getElementById('selectConvertion').addEventListener('change', showThresholdRange());
 
 
 function loadImageToCanvas(inputId, canvasId) {
@@ -30,17 +28,27 @@ function loadImageToCanvas(inputId, canvasId) {
 
                     // Desenha a imagem no canvas
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    if(inputId == 'inputImage'){
+                        getHistogram('showInputImage', 'originalHistogram');
+                    }
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
     });
+
 }
 
 document.getElementById("processButton").addEventListener("click", executeFeature);
 document.getElementById("convertButton").addEventListener("click", executeConvert);
 document.getElementById('equalizeHistogramButton').addEventListener('click', equalizeHistogram);
+
+document.getElementById("enable2Images").addEventListener("change", function(){
+    updateButtons();
+    updateFeature('arithmeticButton');
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.featureButton').forEach(button => {
@@ -50,11 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
             updateFeature(selectedFeature);
         });
     });
-});
-
-document.getElementById("arithmeticWith2images").addEventListener("change", function(){
-    updateFeature('arithmetic');
-    showRange();
 });
 
 if(document.getElementById('range')){
@@ -177,52 +180,124 @@ function draw8bitImage(imageData){
     ctx.putImageData(imageDataObj, 0, 0);   
 }
 
+function drawHistogram(histogram, labels, values){
+    const canvas = document.getElementById(histogram);
+    const ctx = canvas.getContext("2d");
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const margin = 40;
+    const barLarge = (width - 2 * margin) / labels.length;
+
+    const maxValue = Math.max(...values);
+    const heightScale = (height - 2 * margin) / maxValue;
+
+    ctx.clearRect(0, 0, width, height);
+
+    ctx.beginPath();
+    ctx.moveTo(margin, margin);
+    ctx.lineTo(margin, height - margin);
+    ctx.lineTo(width - margin, height - margin);
+    ctx.stroke();
+
+    labels.forEach((label, i) => {
+        const x = margin + i * barLarge;
+        const h = values[i] * heightScale;
+        const y = height - margin - h;
+
+        ctx.fillStyle = "#2196f3";
+        ctx.fillRect(x, y, barLarge, h);
+  
+        ctx.fillStyle = "#000";
+        ctx.fillText(label, x + barLarge / 4, height - margin + 12);
+    });
+}
+
+function updateButtons(){
+    const selected = document.getElementById("enable2Images").checked;
+    
+    if(selected){
+         document.getElementById("featureButtons").innerHTML = ` <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
+                                                                 <button value="logic" id="logicButton" class="featureButton">Lógica</button>
+                                                                 <button value="diff" id="diffButton" class="featureButton">Diferença</button>
+                                                                 <button value="linear" id="linearButton" class="featureButton">Linear</button>`;
+    }else{
+        document.getElementById("featureButtons").innerHTML = `  <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
+                                                                 <button value="invert" id="invertButton" class="featureButton">Inverção</button>`;
+    }
+
+    document.querySelectorAll('.featureButton').forEach(button => {
+        button.addEventListener('click',function(event){
+            event.preventDefault();
+            selectedFeature = event.target.id.replace('ButtonSelect','')
+            updateFeature(selectedFeature);
+        });
+    });
+
+}
+
+
 function updateFeature(selectedOption){
     const selectOptions = document.getElementById("selectFeatures");
-    selectedFeature = selectedOption;
 
-    switch (selectedOption){
-        case 'arithmeticButton':
-            const realizeArithmeticWith2IMG = document.getElementById("arithmeticWith2images").checked;
+    const checked = document.getElementById("enable2Images").checked;
 
-            if(realizeArithmeticWith2IMG){
-                selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
-                                            <option value="subtValue">Subtrair</option>`;
-            }else {
+    if (checked){
+        switch(selectedFeature){
+            case 'arithmeticButton':
+                showRange(false);
+                selectOptions.innerHTML     =   `   <option value="addValue">Adicionar</option>
+                                                    <option value="subtValue">Subtrair</option>`;
+                break;
+            case 'logicButton':
+                    showRange(false);
+                    selectOptions.innerHTML =  `    <option value="and">AND</option>
+                                                    <option value="or">OR</option>
+                                                    <option value="xor">XOR</option>
+                                                    <option value="not">NOT</option>`;
+    
+                break;
+            case 'diffButton':
+                showRange(false);
+                selectOptions.innerHTML =  ``;
+                break;
+            case 'linearButton':
+                showRange(true);
+                selectOptions.innerHTML =  `<option value="average">Média</option>
+                                            <option value="blending">Blending</option>`;
+                break;
+        }
+    } else{
+        switch(selectedFeature){
+            case 'arithmeticButton':
+                showRange(true);
                 selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
                                             <option value="subtValue">Subtrair</option>
                                             <option value="multValue">Multiplicação</option>
                                             <option value="divValue">Divisão</option>`;
-            }
-            break;
-        case 'logicButton':
-                selectOptions.innerHTML =  `    <option value="and">AND</option>
-                                                <option value="or">OR</option>
-                                                <option value="xor">XOR</option>
-                                                <option value="not">NOT</option>`;
+                break;
+            case 'invertButton':
+                showRange(false);
+                selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
+                                            <option value="vertical">Vertical</option>`;
+                break;
 
-            break;
-        case 'invertButton':
-            selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
-                                        <option value="vertical">Vertical</option>`;
-            break;
-        case 'diffButton':
-            selectOptions.innerHTML =  ``;
-            break;
-        case 'linearButton':
-            selectOptions.innerHTML =  `<option value="average">Média</option>
-                                        <option value="blending">Blending</option>`;
-            break;
+        }
+
     }
 }
 
-function showRange(){
-    const isCheck = document.getElementById("arithmeticWith2images").checked;
-    if (isCheck){
-        document.getElementById('rangeForm').innerHTML = ``;
+function updateRangeLabel(){
+    document.getElementById("labelRange").innerHTML= `<label class = "label" id= "labelRange">Valor: ${document.getElementById("range").value}</label>`
+}
+
+function showRange(show){
+    console.log(show)
+    if (show){
+        document.getElementById('rangeForm').innerHTML = `  <label class = "label" id= "labelRange">Valor: 128</label>
+                                                            <input type= "range" id="range" min="0" max="255" oninput="updateRangeLabel()">`;   
     }else {
-        document.getElementById('rangeForm').innerHTML = `  <label class = "label" id= "labelRange">Valor: </label>
-                                                            <input type= "range" id="range" min="0" max="255">`;                                    
+        document.getElementById('rangeForm').innerHTML = ``;                                 
     }
 }
 
@@ -231,7 +306,7 @@ function executeFeature(){
 
     switch(selectedFeature){
         case 'arithmeticButton':
-            const arithmeticWith2images = document.getElementById("arithmeticWith2images").checked;
+            const arithmeticWith2images = document.getElementById("enable2Images").checked;
             if(arithmeticWith2images){
                 switch (selected) {
                     case('addValue'):
@@ -535,8 +610,7 @@ function linear(op){
         
         switch (op){
             case 'b': //Valor personalizado
-                let value = 50;
-                console.log(value)
+                let value = document.getElementById("range").value;
                 endpoint = `http://localhost:8080/linear/blending?value=${value}`;
                 break;
             case 'a':
@@ -562,6 +636,25 @@ function linear(op){
     }
 }
 
+function getHistogram(img, histogram){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById(img));
+
+    endpoint = `http://localhost:8080/histogram`;
+    fetch(endpoint, {
+        method: 'POST',
+        body: matrixJSON
+    })
+    .then(response => response.json())
+    .then(data => {
+        const labels = Array.from({length: 256}, (_,i) => i);
+        drawHistogram(histogram, labels, data);
+    })
+    .catch(error =>{
+        console.error('Erro: ', error);
+    })
+
+}
+
 function equalizeHistogram(){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
 
@@ -575,7 +668,9 @@ function equalizeHistogram(){
         })
         .then(response => response.json())
         .then(data => {
-            draw8bitImage(data);
+            draw8bitImage(data.image);
+            const labels = Array.from({length: 256}, (_,i) => i);
+            drawHistogram('equalizedHistogram', labels, data.histogram);
         })
         .catch(error => {
             console.error('Erro: ', error);

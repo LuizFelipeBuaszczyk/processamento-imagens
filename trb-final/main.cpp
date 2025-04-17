@@ -112,7 +112,6 @@ struct pixel{
         px.alpha = 255;
     }
 
-<<<<<<< HEAD
     void logicAND(const pixel& pxA, const pixel& pxB){
         if((pxA.px.red == 255) && (pxB.px.red == 255)){
             px.red = 255;
@@ -170,8 +169,6 @@ struct pixel{
         px.alpha = 255;
     }
 
-=======
->>>>>>> development
     void setPixel(const pixel& pxl){
         px.red = pxl.px.red;
         px.green = pxl.px.green;
@@ -181,7 +178,6 @@ struct pixel{
 
     void equalizeHistogram(int newPixelValue){
         
-
         uint8_t pixelValue = validPixelValue(newPixelValue);
 
         px.red = pixelValue;
@@ -354,6 +350,21 @@ string imgToString(const vector<vector<pixel>>& image, bool is8bit) {
     return imgSTR;
 }
 
+string histogramValuesToString(const vector<int> values){
+    ostringstream result;
+
+    result << "[";
+    for(int i=0; i<=255; i++){
+        if(i != 255){
+            result << values[i] << ",";
+        }else{
+            result << values[i] << "]";
+        }
+    }
+    return result.str();
+}
+
+
 vector<vector<pixel>> arithmeticOperation(vector<vector<pixel>>& imgMatrix, int value, char op){
 
     for(size_t i = 0; i < imgMatrix.size(); i++){
@@ -524,6 +535,18 @@ vector<vector<pixel>> linearAverage(vector<vector<pixel>>& imgA, vector<vector<p
     }
 
     return imgResult;
+}
+
+vector<int>getHistogram(vector<vector<pixel>>& img){
+    vector<int> histogram(256,0);
+    for(size_t i = 0; i < img.size(); i++){
+        for(size_t j = 0; j < img[i].size(); j++){
+            img[i][j].rgbTo8Bit();
+            histogram[(int) img[i][j].px.red]++;
+        }
+    }
+
+    return histogram;
 }
 
 vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
@@ -887,16 +910,35 @@ int main() {
     res.set_content(responseIMG, "application/json");
   });
 
+  svr.Post("/histogram", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<int> result = getHistogram(img);
+
+    string response = histogramValuesToString(result);
+
+    res.set_content(response, "application/json");
+  });
+
   svr.Post("/histogram/equalize", [](const httplib::Request& req, httplib::Response& res){
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
     vector<vector<pixel>> result = equalizeHistogram(img);
+    vector<int> histogram = getHistogram(result);
 
     string responseIMG = imgToString(result, true);
+    string responseHistogram = histogramValuesToString(histogram);
 
-    res.set_content(responseIMG, "application/json");
+
+    ostringstream json;
+    json   << "{\n \"image\": " << responseIMG 
+           << ",\n \"histogram\": " << responseHistogram << "\n}";
+
+    res.set_content(json.str(), "application/json");
   });
 
    svr.listen("localhost", 8080);

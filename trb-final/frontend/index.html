@@ -26,23 +26,22 @@
                 </div>
             </div>
             <section>
-                <form class="featureButtons">
+                <form class="featureButtons" id="featureButtons">
                     <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
-                    <button value="logic" id="logicButton" class="featureButton">Lógica</button>
                     <button value="invert" id="invertButton" class="featureButton">Inverção</button>
-                    <button value="diff" id="diffButton" class="featureButton">Diferença</button>
-                    <button value="linear" id="linearButton" class="featureButton">Linear</button>
                 </form>
-                <div>
+                <div class="operations">
+                    <div id="divEnable2Images">
+                        <input type= "checkbox" id="enable2Images">
+                        <label type="text">2 imagens</label>
+                    </div>
                     <select name="selectFeatures" id="selectFeatures">
                         <option value="addValue">Adicionar</option>
                         <option value="subtValue">Subtrair</option>
                         <option value="multValue">Multiplicação</option>
                         <option value="divValue">Divisão</option>     
                     </select>
-                    <input type= "checkbox" id="arithmeticWith2images">
                     <form id="rangeForm"></form>
-                    <label type="text">2 imagens</label>
                     <button id="processButton">Processar</button>
                 </div>
             </section>
@@ -63,6 +62,8 @@
         </div>
         <div>
             <button id="equalizeHistogramButton">Equalizar Histograma</button>
+            <canvas id="originalHistogram"  width="600" height="400"></canvas>
+            <canvas id="equalizedHistogram" width="600" height="400"></canvas>
         </div>
 
     </main>
