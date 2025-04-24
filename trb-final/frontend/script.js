@@ -223,7 +223,8 @@ function updateButtons(){
                                                                  <button value="linear" id="linearButton" class="featureButton">Linear</button>`;
     }else{
         document.getElementById("featureButtons").innerHTML = `  <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
-                                                                 <button value="invert" id="invertButton" class="featureButton">Inverção</button>`;
+                                                                 <button value="invert" id="invertButton" class="featureButton">Inverção</button>
+                                                                 <button value="convolutional" id="convolutionalButton" class="featureButton">Convolução</button>`;
     }
 
     document.querySelectorAll('.featureButton').forEach(button => {
@@ -280,6 +281,13 @@ function updateFeature(selectedOption){
                 showRange(false);
                 selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
                                             <option value="vertical">Vertical</option>`;
+                break;
+            
+            case 'convolutionalButton':
+                showRange(false);
+                selectOptions.innerHTML =  `<option value="mean">MEAN</option>
+                                            <option value="min">MIN</option>
+                                            <option value="max">MAX</option>`;
                 break;
 
         }
@@ -360,7 +368,10 @@ function executeFeature(){
                     linear('a');
                     break;
             }
-            break;         
+            break;  
+        
+        case 'convolutionalButton': 
+            convolutional(selected);
     }       
 }
 
@@ -654,6 +665,29 @@ function getHistogram(img, histogram){
     })
 
 }
+
+function  convolutional(option){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    
+    if(false){
+
+    } else {
+        endpoint = `http://localhost:8080/convolutional/${option}`; 
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {      
+            drawImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
+    }
+}
+
+
 
 function equalizeHistogram(){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));

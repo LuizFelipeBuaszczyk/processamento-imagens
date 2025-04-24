@@ -22,6 +22,7 @@
         "xhash": "cpp",
         "xlocinfo": "cpp",
         "xtree": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "initializer_list": "cpp"
     }
 }

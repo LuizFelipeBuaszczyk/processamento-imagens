@@ -185,11 +185,233 @@ struct pixel{
 
 
     void rgbTo8Bit(){
-        px.red = (0.2989*px.red) + (0.5870 * px.green) + (0.1140*px.blue);
+        px.red = (px.red + px.green + px.blue)/3;
     }
 
     void rgbTo1Bit(int threshold){
         px.red >= threshold ? px.red = 255 : px.red = 0; 
+    }
+
+    void convolutionMean(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+        
+        int value = (pxTarget.px.red + pxLeft.px.red + pxRight.px.red + pxUp.px.red + pxDown.px.red + pxNW.px.red + pxNE.px.red + pxSW.px.red + pxSE.px.red)/9;
+        uint8_t newPixelValue = validPixelValue(value);
+        px.red = newPixelValue;
+
+        value = (pxTarget.px.green + pxLeft.px.green + pxRight.px.green + pxUp.px.green + pxDown.px.green + pxNW.px.green + pxNE.px.green + pxSW.px.green + pxSE.px.green)/9;
+        newPixelValue = validPixelValue(value);
+        px.green = newPixelValue;
+
+        value = (pxTarget.px.blue + pxLeft.px.blue + pxRight.px.blue + pxUp.px.blue + pxDown.px.blue + pxNW.px.blue + pxNE.px.blue + pxSW.px.blue + pxSE.px.blue)/9;
+        newPixelValue = validPixelValue(value);
+        px.blue = newPixelValue;
+
+        px.alpha = 255;    
+    }
+
+    void convolutionMax(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+        uint8_t value;
+
+        value = pxTarget.px.red > pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
+
+        if (value < pxRight.px.red){
+            value = pxRight.px.red;
+        }
+
+        if (value < pxUp.px.red){
+            value = pxUp.px.red;
+        }
+
+        if (value < pxDown.px.red){
+            value = pxDown.px.red;
+        }
+
+        if (value < pxNW.px.red){
+            value = pxNW.px.red;
+        }
+
+        if (value < pxNE.px.red){
+            value = pxNE.px.red;
+        }
+
+        if (value < pxSW.px.red){
+            value = pxSW.px.red;
+        }
+
+        if (value < pxSE.px.red){
+            value = pxSE.px.red;
+        }
+
+        px.red = value;
+
+        value = pxTarget.px.green > pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
+
+        if (value < pxRight.px.green){
+            value = pxRight.px.green;
+        }
+
+        if (value < pxUp.px.green){
+            value = pxUp.px.green;
+        }
+
+        if (value < pxDown.px.green){
+            value = pxDown.px.green;
+        }
+
+        if (value < pxNW.px.green){
+            value = pxNW.px.green;
+        }
+
+        if (value < pxNE.px.green){
+            value = pxNE.px.green;
+        }
+
+        if (value < pxSW.px.green){
+            value = pxSW.px.green;
+        }
+
+        if (value < pxSE.px.green){
+            value = pxSE.px.green;
+        }
+
+        px.green = value;
+
+        value = pxTarget.px.blue > pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
+
+        if (value < pxRight.px.blue){
+            value = pxRight.px.blue;
+        }
+
+        if (value < pxUp.px.blue){
+            value = pxUp.px.blue;
+        }
+
+        if (value < pxDown.px.blue){
+            value = pxDown.px.blue;
+        }
+
+        if (value < pxNW.px.blue){
+            value = pxNW.px.blue;
+        }
+
+        if (value < pxNE.px.blue){
+            value = pxNE.px.blue;
+        }
+
+        if (value < pxSW.px.blue){
+            value = pxSW.px.blue;
+        }
+
+        if (value < pxSE.px.blue){
+            value = pxSE.px.blue;
+        }
+
+        px.blue = value;
+
+        px.alpha = 255;
+
+    }
+
+    void convolutionMin(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+        uint8_t value;
+
+        value = pxTarget.px.red < pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
+
+        if (value > pxRight.px.red){
+            value = pxRight.px.red;
+        }
+
+        if (value > pxUp.px.red){
+            value = pxUp.px.red;
+        }
+
+        if (value > pxDown.px.red){
+            value = pxDown.px.red;
+        }
+
+        if (value > pxNW.px.red){
+            value = pxNW.px.red;
+        }
+
+        if (value > pxNE.px.red){
+            value = pxNE.px.red;
+        }
+
+        if (value > pxSW.px.red){
+            value = pxSW.px.red;
+        }
+
+        if (value > pxSE.px.red){
+            value = pxSE.px.red;
+        }
+
+        px.red = value;
+
+        value = pxTarget.px.green < pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
+
+        if (value > pxRight.px.green){
+            value = pxRight.px.green;
+        }
+
+        if (value > pxUp.px.green){
+            value = pxUp.px.green;
+        }
+
+        if (value > pxDown.px.green){
+            value = pxDown.px.green;
+        }
+
+        if (value > pxNW.px.green){
+            value = pxNW.px.green;
+        }
+
+        if (value > pxNE.px.green){
+            value = pxNE.px.green;
+        }
+
+        if (value > pxSW.px.green){
+            value = pxSW.px.green;
+        }
+
+        if (value > pxSE.px.green){
+            value = pxSE.px.green;
+        }
+
+        px.green = value;
+
+        value = pxTarget.px.blue < pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
+
+        if (value > pxRight.px.blue){
+            value = pxRight.px.blue;
+        }
+
+        if (value > pxUp.px.blue){
+            value = pxUp.px.blue;
+        }
+
+        if (value > pxDown.px.blue){
+            value = pxDown.px.blue;
+        }
+
+        if (value > pxNW.px.blue){
+            value = pxNW.px.blue;
+        }
+
+        if (value > pxNE.px.blue){
+            value = pxNE.px.blue;
+        }
+
+        if (value > pxSW.px.blue){
+            value = pxSW.px.blue;
+        }
+
+        if (value > pxSE.px.blue){
+            value = pxSE.px.blue;
+        }
+
+        px.blue = value;
+
+        px.alpha = 255;
     }
 
 
@@ -552,7 +774,7 @@ vector<int>getHistogram(vector<vector<pixel>>& img){
 vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
     int width = img[0].size();
     int height = img.size();
-    int histogram[256] = {};
+    vector<int> histogram(256, 0);
     vector<vector<pixel>> imgResult(height, vector<pixel>(width));
     
     for(size_t i = 0; i < img.size(); i++){
@@ -562,9 +784,9 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
         }
     }
 
-    int cfd[256] = {};
+    vector<int> cfd(256, 0);
     cfd[0] = histogram[0];
-    int newPixelValue[256] = {};
+    vector<int> newPixelValue(256, 0);
 
     for (int i=0; i<=255; i++){
         if(i!=0){
@@ -584,6 +806,77 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
     return imgResult;
 }
 
+vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size(); i++){
+        for(size_t j = padding; j < imgResult[0].size(); j++){
+            imgResult[i-padding][j-padding].convolutionMean(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionMax(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+    for(size_t i = padding; i < imgResult.size(); i++){
+        for(size_t j = padding; j < imgResult[0].size(); j++){
+            imgResult[i-padding][j-padding].convolutionMax(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+        }
+    }
+
+    return imgResult;
+}
+
+
+vector<vector<pixel>> convolutionMin(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+    for(size_t i = padding; i < imgResult.size(); i++){
+        for(size_t j = padding; j < imgResult[0].size(); j++){
+            imgResult[i-padding][j-padding].convolutionMin(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> edgeAdjust(vector<vector<pixel>>& img, int kernel){
+    size_t originalRows = img.size();
+    size_t originalColums = img[0].size();
+    int padding = kernel / 2;
+    vector<vector<pixel>> imgResult(originalRows + kernel, vector<pixel>(originalColums + kernel));
+    pixel pxl;
+    pxl.px.alpha = 255;
+
+    for(size_t i = 0; i < imgResult.size(); i++){
+        for(size_t j = 0; j < imgResult[0].size(); j++){
+            if (i < padding) { // Borda superior
+                if (j < padding) { // Canto superior esquerdo
+                    pxl = img[0][0];
+                } else if (j >= originalColums + padding) { // Canto superior direito
+                    pxl = img[0][originalColums - 1];
+                } else { // Borda superior (meio)
+                    pxl = img[0][j - padding];
+                }
+            } else if (i >= originalRows + padding) { // Borda inferior
+                if (j < padding) { // Canto inferior esquerdo
+                    pxl = img[originalRows - 1][0];
+                } else if (j >= originalColums + padding) { // Canto inferior direito
+                    pxl = img[originalRows - 1][originalColums - 1];
+                } else { // Borda inferior (meio)
+                    pxl = img[originalRows - 1][j - padding];
+                }
+            } else if (j < padding) { // Borda esquerda (sem ser os cantos)
+                pxl = img[i - padding][0];
+            } else if (j >= originalColums + padding) { // Borda direita (sem ser os cantos)
+                pxl = img[i - padding][originalColums - 1];
+            } else { // Região central (imagem original)
+                pxl = img[i - padding][j - padding];
+            }
+            imgResult[i][j].setPixel(pxl);
+        }
+    }
+
+    return imgResult;
+}
 
 
 bool validOperationWith2Images (vector<vector<pixel>>& imgA, vector<vector<pixel>>& imgB){
@@ -939,6 +1232,48 @@ int main() {
            << ",\n \"histogram\": " << responseHistogram << "\n}";
 
     res.set_content(json.str(), "application/json");
+  });
+
+  svr.Post("/convolutional/mean", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, 3);
+    img = convolutionMean(result, img, 3/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/max", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, 3);
+    img = convolutionMax(result, img, 3/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/min", [](const httplib::Request& req, httplib::Response& res){
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, 3);
+    img = convolutionMin(result, img, 3/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
   });
 
    svr.listen("localhost", 8080);
