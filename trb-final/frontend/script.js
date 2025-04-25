@@ -668,11 +668,12 @@ function getHistogram(img, histogram){
 
 function  convolutional(option){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const kernel = 3;
     
     if(false){
 
     } else {
-        endpoint = `http://localhost:8080/convolutional/${option}`; 
+        endpoint = `http://localhost:8080/convolutional/${option}?kernel=${kernel}`; 
         fetch(endpoint, {
             method: 'POST',
             body: matrixJSON

@@ -181,6 +181,9 @@ struct pixel{
         uint8_t pixelValue = validPixelValue(newPixelValue);
 
         px.red = pixelValue;
+        px.green = pixelValue;
+        px.blue = pixelValue;
+        px.alpha = 255;
     }
 
 
@@ -192,225 +195,92 @@ struct pixel{
         px.red >= threshold ? px.red = 255 : px.red = 0; 
     }
 
-    void convolutionMean(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+    //void convolutionMean(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+    void convolutionMean(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int pixelAmount)  { 
+        int valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 0;
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valueRed += img[i][j].px.red;
+                valueGreen += img[i][j].px.green;
+                valueBlue += img[i][j].px.blue;
+            }
+        }
         
-        int value = (pxTarget.px.red + pxLeft.px.red + pxRight.px.red + pxUp.px.red + pxDown.px.red + pxNW.px.red + pxNE.px.red + pxSW.px.red + pxSE.px.red)/9;
-        uint8_t newPixelValue = validPixelValue(value);
-        px.red = newPixelValue;
+        px.red = validPixelValue(valueRed/pixelAmount);
 
-        value = (pxTarget.px.green + pxLeft.px.green + pxRight.px.green + pxUp.px.green + pxDown.px.green + pxNW.px.green + pxNE.px.green + pxSW.px.green + pxSE.px.green)/9;
-        newPixelValue = validPixelValue(value);
-        px.green = newPixelValue;
+        px.green = validPixelValue(valueGreen/pixelAmount);
 
-        value = (pxTarget.px.blue + pxLeft.px.blue + pxRight.px.blue + pxUp.px.blue + pxDown.px.blue + pxNW.px.blue + pxNE.px.blue + pxSW.px.blue + pxSE.px.blue)/9;
-        newPixelValue = validPixelValue(value);
-        px.blue = newPixelValue;
+        px.blue = validPixelValue(valueBlue/pixelAmount);
+
+        //int value = (pxTarget.px.red + pxLeft.px.red + pxRight.px.red + pxUp.px.red + pxDown.px.red + pxNW.px.red + pxNE.px.red + pxSW.px.red + pxSE.px.red)/9;
+        // uint8_t newPixelValue = validPixelValue(value);
+        // px.red = newPixelValue;
+
+        // value = (pxTarget.px.green + pxLeft.px.green + pxRight.px.green + pxUp.px.green + pxDown.px.green + pxNW.px.green + pxNE.px.green + pxSW.px.green + pxSE.px.green)/9;
+        // newPixelValue = validPixelValue(value);
+        // px.green = newPixelValue;
+
+        // value = (pxTarget.px.blue + pxLeft.px.blue + pxRight.px.blue + pxUp.px.blue + pxDown.px.blue + pxNW.px.blue + pxNE.px.blue + pxSW.px.blue + pxSE.px.blue)/9;
+        // newPixelValue = validPixelValue(value);
+        // px.blue = newPixelValue;
 
         px.alpha = 255;    
     }
 
-    void convolutionMax(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
-        uint8_t value;
+    void convolutionMax(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        uint8_t valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 0;
 
-        value = pxTarget.px.red > pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                
+                if (valueRed < img[i][j].px.red){
+                    valueRed = img[i][j].px.red;
+                }
 
-        if (value < pxRight.px.red){
-            value = pxRight.px.red;
+                if (valueGreen < img[i][j].px.green){
+                    valueGreen = img[i][j].px.green;
+                }
+
+                if (valueBlue < img[i][j].px.blue){
+                    valueBlue = img[i][j].px.blue;
+                }
+            }
         }
 
-        if (value < pxUp.px.red){
-            value = pxUp.px.red;
-        }
-
-        if (value < pxDown.px.red){
-            value = pxDown.px.red;
-        }
-
-        if (value < pxNW.px.red){
-            value = pxNW.px.red;
-        }
-
-        if (value < pxNE.px.red){
-            value = pxNE.px.red;
-        }
-
-        if (value < pxSW.px.red){
-            value = pxSW.px.red;
-        }
-
-        if (value < pxSE.px.red){
-            value = pxSE.px.red;
-        }
-
-        px.red = value;
-
-        value = pxTarget.px.green > pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
-
-        if (value < pxRight.px.green){
-            value = pxRight.px.green;
-        }
-
-        if (value < pxUp.px.green){
-            value = pxUp.px.green;
-        }
-
-        if (value < pxDown.px.green){
-            value = pxDown.px.green;
-        }
-
-        if (value < pxNW.px.green){
-            value = pxNW.px.green;
-        }
-
-        if (value < pxNE.px.green){
-            value = pxNE.px.green;
-        }
-
-        if (value < pxSW.px.green){
-            value = pxSW.px.green;
-        }
-
-        if (value < pxSE.px.green){
-            value = pxSE.px.green;
-        }
-
-        px.green = value;
-
-        value = pxTarget.px.blue > pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
-
-        if (value < pxRight.px.blue){
-            value = pxRight.px.blue;
-        }
-
-        if (value < pxUp.px.blue){
-            value = pxUp.px.blue;
-        }
-
-        if (value < pxDown.px.blue){
-            value = pxDown.px.blue;
-        }
-
-        if (value < pxNW.px.blue){
-            value = pxNW.px.blue;
-        }
-
-        if (value < pxNE.px.blue){
-            value = pxNE.px.blue;
-        }
-
-        if (value < pxSW.px.blue){
-            value = pxSW.px.blue;
-        }
-
-        if (value < pxSE.px.blue){
-            value = pxSE.px.blue;
-        }
-
-        px.blue = value;
-
+        px.red = valueRed;
+        px.green = valueGreen;
+        px.blue = valueBlue;
         px.alpha = 255;
 
     }
 
-    void convolutionMin(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
-        uint8_t value;
+    void convolutionMin(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        uint8_t valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 255;
 
-        value = pxTarget.px.red < pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                
+                if (valueRed > img[i][j].px.red){
+                    valueRed = img[i][j].px.red;
+                }
 
-        if (value > pxRight.px.red){
-            value = pxRight.px.red;
+                if (valueGreen > img[i][j].px.green){
+                    valueGreen = img[i][j].px.green;
+                }
+
+                if (valueBlue > img[i][j].px.blue){
+                    valueBlue = img[i][j].px.blue;
+                }
+            }
         }
 
-        if (value > pxUp.px.red){
-            value = pxUp.px.red;
-        }
-
-        if (value > pxDown.px.red){
-            value = pxDown.px.red;
-        }
-
-        if (value > pxNW.px.red){
-            value = pxNW.px.red;
-        }
-
-        if (value > pxNE.px.red){
-            value = pxNE.px.red;
-        }
-
-        if (value > pxSW.px.red){
-            value = pxSW.px.red;
-        }
-
-        if (value > pxSE.px.red){
-            value = pxSE.px.red;
-        }
-
-        px.red = value;
-
-        value = pxTarget.px.green < pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
-
-        if (value > pxRight.px.green){
-            value = pxRight.px.green;
-        }
-
-        if (value > pxUp.px.green){
-            value = pxUp.px.green;
-        }
-
-        if (value > pxDown.px.green){
-            value = pxDown.px.green;
-        }
-
-        if (value > pxNW.px.green){
-            value = pxNW.px.green;
-        }
-
-        if (value > pxNE.px.green){
-            value = pxNE.px.green;
-        }
-
-        if (value > pxSW.px.green){
-            value = pxSW.px.green;
-        }
-
-        if (value > pxSE.px.green){
-            value = pxSE.px.green;
-        }
-
-        px.green = value;
-
-        value = pxTarget.px.blue < pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
-
-        if (value > pxRight.px.blue){
-            value = pxRight.px.blue;
-        }
-
-        if (value > pxUp.px.blue){
-            value = pxUp.px.blue;
-        }
-
-        if (value > pxDown.px.blue){
-            value = pxDown.px.blue;
-        }
-
-        if (value > pxNW.px.blue){
-            value = pxNW.px.blue;
-        }
-
-        if (value > pxNE.px.blue){
-            value = pxNE.px.blue;
-        }
-
-        if (value > pxSW.px.blue){
-            value = pxSW.px.blue;
-        }
-
-        if (value > pxSE.px.blue){
-            value = pxSE.px.blue;
-        }
-
-        px.blue = value;
-
+        px.red = valueRed;
+        px.green = valueGreen;
+        px.blue = valueBlue;
         px.alpha = 255;
     }
 
@@ -792,8 +662,13 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
         if(i!=0){
             cfd[i] = histogram[i]+cfd[i-1];
         }
-        float tempValue = (static_cast<float>(cfd[i]-cfd[0])/static_cast<float>((width*height)-cfd[0]));
-        newPixelValue[i] = tempValue*255;
+        
+        float upper = cfd[i] - cfd[0] > 0 ? cfd[i] - cfd[0] : 1;
+        float under = ((width*height)-cfd[0]);
+
+        float tempValue = upper/under;
+        newPixelValue[i] = tempValue * 255;
+
     }
 
 
@@ -806,11 +681,13 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
     return imgResult;
 }
 
-vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int kernel){
 
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMean(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    int area = kernel*kernel;
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMean(img, padding, i, j, area);
         }
     }
 
@@ -818,9 +695,11 @@ vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<
 }
 
 vector<vector<pixel>> convolutionMax(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMax(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    
+    
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMax(img, padding, i, j);
         }
     }
 
@@ -829,9 +708,10 @@ vector<vector<pixel>> convolutionMax(vector<vector<pixel>>& img, vector<vector<p
 
 
 vector<vector<pixel>> convolutionMin(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMin(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMin(img, padding, i, j);
         }
     }
 
@@ -1235,12 +1115,18 @@ int main() {
   });
 
   svr.Post("/convolutional/mean", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMean(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMean(result, img, kernel/2, kernel);
 
     string responseIMG = imgToString(img, false);
 
@@ -1249,12 +1135,18 @@ int main() {
   });
 
   svr.Post("/convolutional/max", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMax(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMax(result, img, kernel/2);
 
     string responseIMG = imgToString(img, false);
 
@@ -1263,12 +1155,18 @@ int main() {
   });
 
   svr.Post("/convolutional/min", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMin(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMin(result, img, kernel/2);
 
     string responseIMG = imgToString(img, false);
 
