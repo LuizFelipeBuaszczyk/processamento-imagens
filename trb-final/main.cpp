@@ -6,6 +6,7 @@
 #include "httplib.h"
 #include <vector> 
 #include <stack>
+#include <algorithm>
 
 using namespace std;
 
@@ -214,18 +215,6 @@ struct pixel{
 
         px.blue = validPixelValue(valueBlue/pixelAmount);
 
-        //int value = (pxTarget.px.red + pxLeft.px.red + pxRight.px.red + pxUp.px.red + pxDown.px.red + pxNW.px.red + pxNE.px.red + pxSW.px.red + pxSE.px.red)/9;
-        // uint8_t newPixelValue = validPixelValue(value);
-        // px.red = newPixelValue;
-
-        // value = (pxTarget.px.green + pxLeft.px.green + pxRight.px.green + pxUp.px.green + pxDown.px.green + pxNW.px.green + pxNE.px.green + pxSW.px.green + pxSE.px.green)/9;
-        // newPixelValue = validPixelValue(value);
-        // px.green = newPixelValue;
-
-        // value = (pxTarget.px.blue + pxLeft.px.blue + pxRight.px.blue + pxUp.px.blue + pxDown.px.blue + pxNW.px.blue + pxNE.px.blue + pxSW.px.blue + pxSE.px.blue)/9;
-        // newPixelValue = validPixelValue(value);
-        // px.blue = newPixelValue;
-
         px.alpha = 255;    
     }
 
@@ -261,6 +250,7 @@ struct pixel{
         uint8_t valueRed, valueGreen, valueBlue;
         valueRed = valueGreen = valueBlue = 255;
 
+
         for(int i = targetY-padding; i <= targetY+padding; i++){
             for (int j = targetX-padding; j <= targetX+padding; j++){
                 
@@ -281,6 +271,125 @@ struct pixel{
         px.red = valueRed;
         px.green = valueGreen;
         px.blue = valueBlue;
+        px.alpha = 255;
+    }
+
+    void convolutionConservativeSmoothing(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+        pixel targetPixel;
+
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                if (i == targetY && j == targetX){
+                    targetPixel = img[i][j];
+                }else{
+                    valuesRed.push_back(img[i][j].px.red);
+                    valuesGreen.push_back(img[i][j].px.green);
+                    valuesBlue.push_back(img[i][j].px.blue);
+                }
+            }
+        }
+
+        uint8_t maxRed, maxGreen, maxBlue;
+        uint8_t minRed, minGreen, minBlue; 
+
+        sort(valuesRed.begin(), valuesRed.end());
+        minRed = valuesRed[0];
+        maxRed = valuesRed[valuesRed.size() - 1];
+
+        sort(valuesGreen.begin(), valuesGreen.end());
+        minGreen = valuesGreen[0];
+        maxGreen = valuesGreen[valuesGreen.size() - 1];
+
+        sort(valuesBlue.begin(), valuesBlue.end());
+        minBlue = valuesBlue[0];
+        maxBlue = valuesBlue[valuesBlue.size() - 1];
+       
+        px.red = targetPixel.px.red;
+        if (px.red > maxRed){
+            px.red = maxRed;
+        }
+        else {
+            if (px.red < minRed){
+                px.red = minRed;
+            }
+        }
+
+        // Green
+        px.green = targetPixel.px.green;
+        if (px.green > maxGreen){
+            px.green = maxGreen;
+        }
+        else {
+            if (px.green < minGreen){
+                px.green = minGreen;
+            }
+        }
+
+        // Blue
+        px.blue = targetPixel.px.blue;
+        if (px.blue > maxBlue){
+            px.blue = maxBlue;
+        }
+        else {
+            if (px.blue < minBlue){
+                px.blue = minBlue;
+            }
+        }
+
+        px.alpha = 255;
+    }
+
+    void convolutionOrder(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int selectedValue){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valuesRed.push_back(img[i][j].px.red);
+                valuesGreen.push_back(img[i][j].px.green);
+                valuesBlue.push_back(img[i][j].px.blue);
+            }
+        }
+
+        // Ordenação -- MUUUITO LENTA
+        sort(valuesRed.begin(), valuesRed.end());
+        sort(valuesGreen.begin(), valuesGreen.end());
+        sort(valuesBlue.begin(), valuesBlue.end());
+       
+        px.red = valuesRed[selectedValue];
+        px.green = valuesGreen[selectedValue];
+        px.blue = valuesBlue[selectedValue];
+        px.alpha = 255;
+    }
+
+
+    void convolutionMedian(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valuesRed.push_back(img[i][j].px.red);
+                valuesGreen.push_back(img[i][j].px.green);
+                valuesBlue.push_back(img[i][j].px.blue);
+            }
+        }
+
+        sort(valuesRed.begin(), valuesRed.end());
+        sort(valuesGreen.begin(), valuesGreen.end());
+        sort(valuesBlue.begin(), valuesBlue.end());
+
+        px.red = valuesRed[valuesRed.size()/2];
+        px.green = valuesGreen[valuesGreen.size()/2];
+        px.blue = valuesBlue[valuesBlue.size()/2];
         px.alpha = 255;
     }
 
@@ -712,6 +821,39 @@ vector<vector<pixel>> convolutionMin(vector<vector<pixel>>& img, vector<vector<p
     for(size_t i = padding; i < imgResult.size() + padding; i++){
         for(size_t j = padding; j < imgResult[0].size() + padding; j++){
             imgResult[i-padding][j-padding].convolutionMin(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionMedian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMedian(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionOrder(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int selectedValue){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionOrder(img, padding, i, j, selectedValue);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionConservativeSmoothing(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionConservativeSmoothing(img, padding, i, j);
         }
     }
 
@@ -1167,6 +1309,68 @@ int main() {
 
     vector<vector<pixel>> result = edgeAdjust(img, kernel);
     img = convolutionMin(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/median", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMedian(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/order", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel") || !req.has_param("selectedvalue")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int selectedValue = stoi(req.get_param_value("selectedvalue"));
+    selectedValue -= 1;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionOrder(result, img, kernel/2, selectedValue);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/conservativeSmoothing", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionConservativeSmoothing(result, img, kernel/2);
 
     string responseIMG = imgToString(img, false);
 
