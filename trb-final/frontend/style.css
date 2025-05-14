@@ -96,11 +96,17 @@ section div button{
     font-weight: bold;
 }
 
-#operations{
+.operations{
     display: flex;
     flex-direction: column;
+    gap: 5px;
 }
 
+#rangeForm {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 
 #canvas{
     border: 1px solid black;

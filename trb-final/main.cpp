@@ -429,6 +429,11 @@ struct pixel{
         // Imprimir o kernel
     }
 
+    void SetPixelRed(int value){
+        uint8_t pxValue = validPixelValue(value);
+        px.red = pxValue;
+    }
+
 
     uint8_t validPixelValue(int value){
         if(value>255){
@@ -915,13 +920,17 @@ vector<vector<float>> getGaussianModel(int kernel, float sigma){
     }
 
     float total =0;
+    int center = kernel / 2;
 
     for(int i = 0; i < kernel; i++){
         for (int j = 0; j < kernel; j++){
-            gaussianKernel[i][j] =  (1 / (2 * M_PI * (sigma * sigma))) * (exp(-(i * i + j * j) / (2 * (sigma * sigma))));
+            int x = i - center;
+            int y = j - center;
+            gaussianKernel[i][j] =  (1 / (2 * M_PI * (sigma * sigma))) * (exp(-(x * x + y * y) / (2 * (sigma * sigma))));
             total += gaussianKernel[i][j];
         }
     }
+
 
     for(int i = 0; i < kernel; i++){
         for (int j = 0; j < kernel; j++){
@@ -931,6 +940,23 @@ vector<vector<float>> getGaussianModel(int kernel, float sigma){
 
     return gaussianKernel;
 
+}
+
+vector<vector<pixel>> transformKernelModelToImg(vector<vector<float>>& kernel, int size){
+    vector<vector<pixel>> result;
+    pixel pxl;
+
+
+    for (int i=0; i<size; i++){
+        vector<pixel> line;
+        for(int j=0; j<size; j++){ 
+            int value = kernel[i][j]*255;
+            pxl.SetPixelRed(value);
+            line.push_back(pxl);
+        }
+        result.push_back(line);
+    }
+    return result;
 }
 
 vector<vector<pixel>> edgeAdjust(vector<vector<pixel>>& img, int kernel){
@@ -1456,9 +1482,10 @@ int main() {
         res.set_content(req.body, "application/json");
         return;
     }
+    
 
     int kernel = stoi(req.get_param_value("kernel"));
-    float sigma = stoi(req.get_param_value("sigma"));
+    float sigma = stof(req.get_param_value("sigma"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
@@ -1467,16 +1494,15 @@ int main() {
     vector<vector<pixel>> result = edgeAdjust(img, kernel);
     img = convolutionGaussian(result, img, kernel/2, gaussianKernel);
 
-    vector<vector<pixel>> gaussianModelResult;
+    vector<vector<pixel>> gaussianModelResult = transformKernelModelToImg(gaussianKernel, kernel);
+
 
     string responseIMG = imgToString(img, false);
-    string reponseGaussianModel;
-
-
-    
-    ostringstream json;
+    string responseGaussianModel = imgToString(gaussianModelResult, true);
+  
+    stringstream json;
     json   << "{\n \"image\": " << responseIMG 
-           << ",\n \"histogram\": " << reponseGaussianModel << "\n}";
+           << ",\n \"kernelModel\": " << responseGaussianModel << "\n}";
 
     res.set_content(json.str(), "application/json");
   });

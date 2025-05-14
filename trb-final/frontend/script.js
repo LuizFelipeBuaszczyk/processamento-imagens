@@ -348,6 +348,10 @@ function showConvolutionRange(show){
         if (selected == 'order'){
             html += `<input type="number" name="number" id="inputValue" max="5">`;   
         }
+
+        if (selected == 'gaussian'){
+            html += `<input type="number" name="number" id="inputValue" max="100" step="0.01">`
+        }
                     
         document.getElementById('rangeForm').innerHTML = html;
     }else {
@@ -732,7 +736,8 @@ function  convolutional(option){
             endpoint += `&selectedvalue=${document.getElementById('inputValue').value}`;
         }
         else if (option == 'gaussian'){
-            endpoint += `&sigma=${1.5}`;
+            const value = document.getElementById('inputValue').value.replace(",", ".");
+            endpoint += `&sigma=${value}`;
         }
         
         fetch(endpoint, {
@@ -740,8 +745,13 @@ function  convolutional(option){
             body: matrixJSON
         })
         .then(response => response.json())
-        .then(data => {      
-            drawImage(data);
+        .then(data => {     
+            if (option == 'gaussian'){
+                drawImage(data.image);
+            } 
+            else{
+                drawImage(data);
+            }
         })
         .catch(error => {
             console.error('Erro: ', error);
