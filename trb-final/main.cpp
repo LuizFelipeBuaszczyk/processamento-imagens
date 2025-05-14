@@ -7,6 +7,7 @@
 #include <vector> 
 #include <stack>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -391,6 +392,41 @@ struct pixel{
         px.green = valuesGreen[valuesGreen.size()/2];
         px.blue = valuesBlue[valuesBlue.size()/2];
         px.alpha = 255;
+    }
+
+    void gaussian(vector<vector<pixel>>& img, int padding, int targetY, int targetX, vector<vector<float>>& gaussianKernel){   
+
+        float total = 0;
+        float sumRed = 0;
+        float sumGreen = 0;
+        float sumBlue = 0;
+        int totalRed ;
+        int totalGreen;
+        vector<uint8_t> totalBlue;
+
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+
+                sumRed      +=  (img[i][j].px.red   * gaussianKernel[y][x]);
+                sumGreen    +=  (img[i][j].px.green * gaussianKernel[y][x]);
+                sumBlue     +=  (img[i][j].px.blue  * gaussianKernel[y][x]);
+            } 
+        }
+
+
+        int value = sumRed;
+        px.red = validPixelValue(value);
+
+        value = sumGreen;
+        px.green = validPixelValue(value);
+
+        value = sumBlue;
+        px.blue = validPixelValue(value);
+
+        px.alpha = 255;
+
+        // Imprimir o kernel
     }
 
 
@@ -858,6 +894,43 @@ vector<vector<pixel>> convolutionConservativeSmoothing(vector<vector<pixel>>& im
     }
 
     return imgResult;
+}
+
+vector<vector<pixel>> convolutionGaussian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, vector<vector<float>>& gaussianKernel){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].gaussian(img, padding, i, j, gaussianKernel);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<float>> getGaussianModel(int kernel, float sigma){
+    vector<vector<float>> gaussianKernel(kernel);
+
+    for (int i = 0; i < kernel; i++) {
+        gaussianKernel[i].resize(kernel); 
+    }
+
+    float total =0;
+
+    for(int i = 0; i < kernel; i++){
+        for (int j = 0; j < kernel; j++){
+            gaussianKernel[i][j] =  (1 / (2 * M_PI * (sigma * sigma))) * (exp(-(i * i + j * j) / (2 * (sigma * sigma))));
+            total += gaussianKernel[i][j];
+        }
+    }
+
+    for(int i = 0; i < kernel; i++){
+        for (int j = 0; j < kernel; j++){
+            gaussianKernel[i][j] /= total;
+        }
+    }
+
+    return gaussianKernel;
+
 }
 
 vector<vector<pixel>> edgeAdjust(vector<vector<pixel>>& img, int kernel){
@@ -1376,6 +1449,36 @@ int main() {
 
 
     res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/gaussian", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel") || !req.has_param("sigma")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    float sigma = stoi(req.get_param_value("sigma"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<float>> gaussianKernel = getGaussianModel(kernel, sigma);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionGaussian(result, img, kernel/2, gaussianKernel);
+
+    vector<vector<pixel>> gaussianModelResult;
+
+    string responseIMG = imgToString(img, false);
+    string reponseGaussianModel;
+
+
+    
+    ostringstream json;
+    json   << "{\n \"image\": " << responseIMG 
+           << ",\n \"histogram\": " << reponseGaussianModel << "\n}";
+
+    res.set_content(json.str(), "application/json");
   });
 
    svr.listen("localhost", 8080);

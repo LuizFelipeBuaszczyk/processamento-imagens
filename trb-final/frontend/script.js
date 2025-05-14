@@ -296,7 +296,8 @@ function updateFeature(selectedOption){
                                             <option value="max" class="convolutional">MAX</option>
                                             <option value="median" class="convolutional">MEDIANA</option>
                                             <option value="order" class="convolutional">ORDEM</option>
-                                            <option value="conservativeSmoothing" class="convolutional">SUAVIZAÇÃOO CONSERVATIVA</option>`;
+                                            <option value="conservativeSmoothing" class="convolutional">SUAVIZAÇÃOO CONSERVATIVA</option>
+                                            <option value="gaussian" class="convolutional">Gaussiano</option>`;
                 break;
 
         }
@@ -730,6 +731,10 @@ function  convolutional(option){
         if (option == 'order'){
             endpoint += `&selectedvalue=${document.getElementById('inputValue').value}`;
         }
+        else if (option == 'gaussian'){
+            endpoint += `&sigma=${1.5}`;
+        }
+        
         fetch(endpoint, {
             method: 'POST',
             body: matrixJSON
