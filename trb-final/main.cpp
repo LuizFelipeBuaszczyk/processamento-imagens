@@ -6,6 +6,8 @@
 #include "httplib.h"
 #include <vector> 
 #include <stack>
+#include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -181,6 +183,9 @@ struct pixel{
         uint8_t pixelValue = validPixelValue(newPixelValue);
 
         px.red = pixelValue;
+        px.green = pixelValue;
+        px.blue = pixelValue;
+        px.alpha = 255;
     }
 
 
@@ -192,228 +197,311 @@ struct pixel{
         px.red >= threshold ? px.red = 255 : px.red = 0; 
     }
 
-    void convolutionMean(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+    //void convolutionMean(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
+    void convolutionMean(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int pixelAmount)  { 
+        int valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 0;
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valueRed += img[i][j].px.red;
+                valueGreen += img[i][j].px.green;
+                valueBlue += img[i][j].px.blue;
+            }
+        }
         
-        int value = (pxTarget.px.red + pxLeft.px.red + pxRight.px.red + pxUp.px.red + pxDown.px.red + pxNW.px.red + pxNE.px.red + pxSW.px.red + pxSE.px.red)/9;
-        uint8_t newPixelValue = validPixelValue(value);
-        px.red = newPixelValue;
+        px.red = validPixelValue(valueRed/pixelAmount);
 
-        value = (pxTarget.px.green + pxLeft.px.green + pxRight.px.green + pxUp.px.green + pxDown.px.green + pxNW.px.green + pxNE.px.green + pxSW.px.green + pxSE.px.green)/9;
-        newPixelValue = validPixelValue(value);
-        px.green = newPixelValue;
+        px.green = validPixelValue(valueGreen/pixelAmount);
 
-        value = (pxTarget.px.blue + pxLeft.px.blue + pxRight.px.blue + pxUp.px.blue + pxDown.px.blue + pxNW.px.blue + pxNE.px.blue + pxSW.px.blue + pxSE.px.blue)/9;
-        newPixelValue = validPixelValue(value);
-        px.blue = newPixelValue;
+        px.blue = validPixelValue(valueBlue/pixelAmount);
 
         px.alpha = 255;    
     }
 
-    void convolutionMax(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
-        uint8_t value;
+    void convolutionMax(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        uint8_t valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 0;
 
-        value = pxTarget.px.red > pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                
+                if (valueRed < img[i][j].px.red){
+                    valueRed = img[i][j].px.red;
+                }
 
-        if (value < pxRight.px.red){
-            value = pxRight.px.red;
+                if (valueGreen < img[i][j].px.green){
+                    valueGreen = img[i][j].px.green;
+                }
+
+                if (valueBlue < img[i][j].px.blue){
+                    valueBlue = img[i][j].px.blue;
+                }
+            }
         }
 
-        if (value < pxUp.px.red){
-            value = pxUp.px.red;
-        }
-
-        if (value < pxDown.px.red){
-            value = pxDown.px.red;
-        }
-
-        if (value < pxNW.px.red){
-            value = pxNW.px.red;
-        }
-
-        if (value < pxNE.px.red){
-            value = pxNE.px.red;
-        }
-
-        if (value < pxSW.px.red){
-            value = pxSW.px.red;
-        }
-
-        if (value < pxSE.px.red){
-            value = pxSE.px.red;
-        }
-
-        px.red = value;
-
-        value = pxTarget.px.green > pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
-
-        if (value < pxRight.px.green){
-            value = pxRight.px.green;
-        }
-
-        if (value < pxUp.px.green){
-            value = pxUp.px.green;
-        }
-
-        if (value < pxDown.px.green){
-            value = pxDown.px.green;
-        }
-
-        if (value < pxNW.px.green){
-            value = pxNW.px.green;
-        }
-
-        if (value < pxNE.px.green){
-            value = pxNE.px.green;
-        }
-
-        if (value < pxSW.px.green){
-            value = pxSW.px.green;
-        }
-
-        if (value < pxSE.px.green){
-            value = pxSE.px.green;
-        }
-
-        px.green = value;
-
-        value = pxTarget.px.blue > pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
-
-        if (value < pxRight.px.blue){
-            value = pxRight.px.blue;
-        }
-
-        if (value < pxUp.px.blue){
-            value = pxUp.px.blue;
-        }
-
-        if (value < pxDown.px.blue){
-            value = pxDown.px.blue;
-        }
-
-        if (value < pxNW.px.blue){
-            value = pxNW.px.blue;
-        }
-
-        if (value < pxNE.px.blue){
-            value = pxNE.px.blue;
-        }
-
-        if (value < pxSW.px.blue){
-            value = pxSW.px.blue;
-        }
-
-        if (value < pxSE.px.blue){
-            value = pxSE.px.blue;
-        }
-
-        px.blue = value;
-
+        px.red = valueRed;
+        px.green = valueGreen;
+        px.blue = valueBlue;
         px.alpha = 255;
 
     }
 
-    void convolutionMin(const pixel& pxTarget, const pixel& pxLeft, const pixel& pxRight, const pixel& pxUp, const pixel& pxDown, const pixel& pxNW, const pixel& pxNE, const pixel& pxSW, const pixel& pxSE){
-        uint8_t value;
+    void convolutionMin(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        uint8_t valueRed, valueGreen, valueBlue;
+        valueRed = valueGreen = valueBlue = 255;
 
-        value = pxTarget.px.red < pxLeft.px.red ? pxTarget.px.red : pxLeft.px.red;
 
-        if (value > pxRight.px.red){
-            value = pxRight.px.red;
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                
+                if (valueRed > img[i][j].px.red){
+                    valueRed = img[i][j].px.red;
+                }
+
+                if (valueGreen > img[i][j].px.green){
+                    valueGreen = img[i][j].px.green;
+                }
+
+                if (valueBlue > img[i][j].px.blue){
+                    valueBlue = img[i][j].px.blue;
+                }
+            }
         }
 
-        if (value > pxUp.px.red){
-            value = pxUp.px.red;
+        px.red = valueRed;
+        px.green = valueGreen;
+        px.blue = valueBlue;
+        px.alpha = 255;
+    }
+
+    void convolutionConservativeSmoothing(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+        pixel targetPixel = img[targetY][targetX];
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                if (!((i == targetY) && (j == targetX))){
+                    valuesRed.push_back(img[i][j].px.red);
+                    valuesGreen.push_back(img[i][j].px.green);
+                    valuesBlue.push_back(img[i][j].px.blue);
+                }
+            }
         }
 
-        if (value > pxDown.px.red){
-            value = pxDown.px.red;
+        uint8_t maxRed, maxGreen, maxBlue;
+        uint8_t minRed, minGreen, minBlue; 
+
+        sort(valuesRed.begin(), valuesRed.end());
+        minRed = valuesRed[0];
+        maxRed = valuesRed[valuesRed.size() - 1];
+
+        sort(valuesGreen.begin(), valuesGreen.end());
+        minGreen = valuesGreen[0];
+        maxGreen = valuesGreen[valuesGreen.size() - 1];
+
+        sort(valuesBlue.begin(), valuesBlue.end());
+        minBlue = valuesBlue[0];
+        maxBlue = valuesBlue[valuesBlue.size() - 1];
+       
+        px.red = targetPixel.px.red;
+        if (px.red > maxRed){
+            px.red = maxRed;
+        }
+        else {
+            if (px.red < minRed){
+                px.red = minRed;
+            }
         }
 
-        if (value > pxNW.px.red){
-            value = pxNW.px.red;
+        // Green
+        px.green = targetPixel.px.green;
+        if (px.green > maxGreen){
+            px.green = maxGreen;
+        }
+        else {
+            if (px.green < minGreen){
+                px.green = minGreen;
+            }
         }
 
-        if (value > pxNE.px.red){
-            value = pxNE.px.red;
+        // Blue
+        px.blue = targetPixel.px.blue;
+        if (px.blue > maxBlue){
+            px.blue = maxBlue;
         }
-
-        if (value > pxSW.px.red){
-            value = pxSW.px.red;
+        else {
+            if (px.blue < minBlue){
+                px.blue = minBlue;
+            }
         }
-
-        if (value > pxSE.px.red){
-            value = pxSE.px.red;
-        }
-
-        px.red = value;
-
-        value = pxTarget.px.green < pxLeft.px.green ? pxTarget.px.green : pxLeft.px.green;
-
-        if (value > pxRight.px.green){
-            value = pxRight.px.green;
-        }
-
-        if (value > pxUp.px.green){
-            value = pxUp.px.green;
-        }
-
-        if (value > pxDown.px.green){
-            value = pxDown.px.green;
-        }
-
-        if (value > pxNW.px.green){
-            value = pxNW.px.green;
-        }
-
-        if (value > pxNE.px.green){
-            value = pxNE.px.green;
-        }
-
-        if (value > pxSW.px.green){
-            value = pxSW.px.green;
-        }
-
-        if (value > pxSE.px.green){
-            value = pxSE.px.green;
-        }
-
-        px.green = value;
-
-        value = pxTarget.px.blue < pxLeft.px.blue ? pxTarget.px.blue : pxLeft.px.blue;
-
-        if (value > pxRight.px.blue){
-            value = pxRight.px.blue;
-        }
-
-        if (value > pxUp.px.blue){
-            value = pxUp.px.blue;
-        }
-
-        if (value > pxDown.px.blue){
-            value = pxDown.px.blue;
-        }
-
-        if (value > pxNW.px.blue){
-            value = pxNW.px.blue;
-        }
-
-        if (value > pxNE.px.blue){
-            value = pxNE.px.blue;
-        }
-
-        if (value > pxSW.px.blue){
-            value = pxSW.px.blue;
-        }
-
-        if (value > pxSE.px.blue){
-            value = pxSE.px.blue;
-        }
-
-        px.blue = value;
 
         px.alpha = 255;
     }
 
+    void convolutionOrder(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int selectedValue){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valuesRed.push_back(img[i][j].px.red);
+                valuesGreen.push_back(img[i][j].px.green);
+                valuesBlue.push_back(img[i][j].px.blue);
+            }
+        }
+
+        // Ordenação -- MUUUITO LENTA
+        sort(valuesRed.begin(), valuesRed.end());
+        sort(valuesGreen.begin(), valuesGreen.end());
+        sort(valuesBlue.begin(), valuesBlue.end());
+       
+        px.red = valuesRed[selectedValue];
+        px.green = valuesGreen[selectedValue];
+        px.blue = valuesBlue[selectedValue];
+        px.alpha = 255;
+    }
+
+
+    void convolutionMedian(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        vector<uint8_t> valuesRed;
+        vector<uint8_t> valuesGreen;
+        vector<uint8_t> valuesBlue;
+
+
+        for(int i = targetY-padding; i <= targetY+padding; i++){
+            for (int j = targetX-padding; j <= targetX+padding; j++){
+                valuesRed.push_back(img[i][j].px.red);
+                valuesGreen.push_back(img[i][j].px.green);
+                valuesBlue.push_back(img[i][j].px.blue);
+            }
+        }
+
+        sort(valuesRed.begin(), valuesRed.end());
+        sort(valuesGreen.begin(), valuesGreen.end());
+        sort(valuesBlue.begin(), valuesBlue.end());
+
+        px.red = valuesRed[valuesRed.size()/2];
+        px.green = valuesGreen[valuesGreen.size()/2];
+        px.blue = valuesBlue[valuesBlue.size()/2];
+        px.alpha = 255;
+    }
+
+    void gaussian(vector<vector<pixel>>& img, int padding, int targetY, int targetX, vector<vector<float>>& gaussianKernel){   
+
+        float total = 0;
+        float sumRed = 0;
+        float sumGreen = 0;
+        float sumBlue = 0;
+        int totalRed ;
+        int totalGreen;
+        vector<uint8_t> totalBlue;
+
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+
+                sumRed      +=  (img[i][j].px.red   * gaussianKernel[y][x]);
+                sumGreen    +=  (img[i][j].px.green * gaussianKernel[y][x]);
+                sumBlue     +=  (img[i][j].px.blue  * gaussianKernel[y][x]);
+            } 
+        }
+
+
+        int value = sumRed;
+        px.red = validPixelValue(value);
+
+        value = sumGreen;
+        px.green = validPixelValue(value);
+
+        value = sumBlue;
+        px.blue = validPixelValue(value);
+
+        px.alpha = 255;
+
+        // Imprimir o kernel
+    }
+
+    void SetPixelRed(int value){
+        uint8_t pxValue = validPixelValue(value);
+        px.red = pxValue;
+    }
+
+    void prewitBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        float valueX, valueY; 
+        int xDerivate[3][3], yDerivate[3][3];
+
+        xDerivate[0][0] = -1; xDerivate[0][1] = 0; xDerivate[0][2] = 1;
+        xDerivate[1][0] = -1; xDerivate[1][1] = 0; xDerivate[1][2] = 1;
+        xDerivate[2][0] = -1; xDerivate[2][1] = 0; xDerivate[2][2] = 1;
+
+        yDerivate[0][0] = -1; yDerivate[0][1] = -1; yDerivate[0][2] = -1;
+        yDerivate[1][0] =  0; yDerivate[1][1] =  0; yDerivate[1][2] =  0;
+        yDerivate[2][0] =  1; yDerivate[2][1] = 1; yDerivate[2][2] = 1;   
+
+        valueX = valueY = 0;
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                valueX += (img[i][j].px.red * yDerivate[y][x]);
+                valueY += (img[i][j].px.red * xDerivate[y][x]);                
+            } 
+        }
+
+        int value = pow(((valueX*valueX) + (valueY*valueY)), 0.5);
+
+        px.red = validPixelValue(value);
+    }
+
+    void sobelBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        float valueX, valueY; 
+        int xDerivate[3][3], yDerivate[3][3];
+
+        xDerivate[0][0] = 1; xDerivate[0][1] = 0; xDerivate[0][2] = -1;
+        xDerivate[1][0] = 2; xDerivate[1][1] = 0; xDerivate[1][2] = -2;
+        xDerivate[2][0] = 1; xDerivate[2][1] = 0; xDerivate[2][2] = -1;
+
+        yDerivate[0][0] = 1; yDerivate[0][1] = 2; yDerivate[0][2] = 1;
+        yDerivate[1][0] =  0; yDerivate[1][1] =  0; yDerivate[1][2] =  0;
+        yDerivate[2][0] =  -1; yDerivate[2][1] =  -2; yDerivate[2][2] =  -1;   
+
+        valueX = valueY = 0;
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                valueX += (img[i][j].px.red * yDerivate[y][x]);
+                valueY += (img[i][j].px.red * xDerivate[y][x]);                
+            } 
+        }
+
+        int value = pow(((valueX*valueX) + (valueY*valueY)), 0.5);
+
+        px.red = validPixelValue(value);
+    }
+
+
+    void laplacianBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        int Derivate[3][3];
+        int value = 0;
+
+        Derivate[0][0] = -1; Derivate[0][1] = -1; Derivate[0][2] = -1;
+        Derivate[1][0] = -1; Derivate[1][1] = 8; Derivate[1][2] = -1;
+        Derivate[2][0] = -1; Derivate[2][1] = -1; Derivate[2][2] = -1;
+
+
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                value += (img[i][j].px.red * Derivate[y][x]);
+            } 
+        }
+
+        px.red = validPixelValue(value);
+    }
 
     uint8_t validPixelValue(int value){
         if(value>255){
@@ -792,8 +880,13 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
         if(i!=0){
             cfd[i] = histogram[i]+cfd[i-1];
         }
-        float tempValue = (static_cast<float>(cfd[i]-cfd[0])/static_cast<float>((width*height)-cfd[0]));
-        newPixelValue[i] = tempValue*255;
+        
+        float upper = cfd[i] - cfd[0] > 0 ? cfd[i] - cfd[0] : 1;
+        float under = ((width*height)-cfd[0]);
+
+        float tempValue = upper/under;
+        newPixelValue[i] = tempValue * 255;
+
     }
 
 
@@ -806,11 +899,13 @@ vector<vector<pixel>> equalizeHistogram(vector<vector<pixel>>& img){
     return imgResult;
 }
 
-vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int kernel){
 
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMean(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    int area = kernel*kernel;
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMean(img, padding, i, j, area);
         }
     }
 
@@ -818,9 +913,11 @@ vector<vector<pixel>> convolutionMean(vector<vector<pixel>>& img, vector<vector<
 }
 
 vector<vector<pixel>> convolutionMax(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMax(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    
+    
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMax(img, padding, i, j);
         }
     }
 
@@ -829,13 +926,141 @@ vector<vector<pixel>> convolutionMax(vector<vector<pixel>>& img, vector<vector<p
 
 
 vector<vector<pixel>> convolutionMin(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
-    for(size_t i = padding; i < imgResult.size(); i++){
-        for(size_t j = padding; j < imgResult[0].size(); j++){
-            imgResult[i-padding][j-padding].convolutionMin(img[i][j], img[i][j-1], img[i][j+1], img[i-1][j], img[i+1][j], img[i-1][j-1], img[i-1][j+1], img[i+1][j-1], img[i+1][j+1]);
+    
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMin(img, padding, i, j);
         }
     }
 
     return imgResult;
+}
+
+vector<vector<pixel>> convolutionMedian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionMedian(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionOrder(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int selectedValue){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionOrder(img, padding, i, j, selectedValue);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> convolutionConservativeSmoothing(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].convolutionConservativeSmoothing(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> prewitBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].prewitBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> sobelBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].sobelBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+
+vector<vector<pixel>> laplacianBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].laplacianBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+
+
+vector<vector<pixel>> convolutionGaussian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, vector<vector<float>>& gaussianKernel){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].gaussian(img, padding, i, j, gaussianKernel);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<float>> getGaussianModel(int kernel, float sigma){
+    vector<vector<float>> gaussianKernel(kernel);
+
+    for (int i = 0; i < kernel; i++) {
+        gaussianKernel[i].resize(kernel); 
+    }
+
+    float total =0;
+    int center = kernel / 2;
+
+    for(int i = 0; i < kernel; i++){
+        for (int j = 0; j < kernel; j++){
+            int x = i - center;
+            int y = j - center;
+            gaussianKernel[i][j] =  (1 / (2 * M_PI * (sigma * sigma))) * (exp(-(x * x + y * y) / (2 * (sigma * sigma))));
+            total += gaussianKernel[i][j];
+        }
+    }
+
+
+    for(int i = 0; i < kernel; i++){
+        for (int j = 0; j < kernel; j++){
+            gaussianKernel[i][j] /= total;
+        }
+    }
+
+    return gaussianKernel;
+
+}
+
+vector<vector<pixel>> transformKernelModelToImg(vector<vector<float>>& kernel, int size){
+    vector<vector<pixel>> result;
+    pixel pxl;
+
+
+    for (int i=0; i<size; i++){
+        vector<pixel> line;
+        for(int j=0; j<size; j++){ 
+            int value = kernel[i][j]*255;
+            pxl.SetPixelRed(value);
+            line.push_back(pxl);
+        }
+        result.push_back(line);
+    }
+    return result;
 }
 
 vector<vector<pixel>> edgeAdjust(vector<vector<pixel>>& img, int kernel){
@@ -1235,12 +1460,18 @@ int main() {
   });
 
   svr.Post("/convolutional/mean", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMean(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMean(result, img, kernel/2, kernel);
 
     string responseIMG = imgToString(img, false);
 
@@ -1249,12 +1480,18 @@ int main() {
   });
 
   svr.Post("/convolutional/max", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMax(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMax(result, img, kernel/2);
 
     string responseIMG = imgToString(img, false);
 
@@ -1263,18 +1500,183 @@ int main() {
   });
 
   svr.Post("/convolutional/min", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
 
     string body = req.body;
     vector<vector<pixel>> img = parse_json_pixels(body);
 
-    vector<vector<pixel>> result = edgeAdjust(img, 3);
-    img = convolutionMin(result, img, 3/2);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMin(result, img, kernel/2);
 
     string responseIMG = imgToString(img, false);
 
 
     res.set_content(responseIMG, "application/json");
   });
+
+  svr.Post("/convolutional/median", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionMedian(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/order", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel") || !req.has_param("selectedvalue")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int selectedValue = stoi(req.get_param_value("selectedvalue"));
+    selectedValue -= 1;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionOrder(result, img, kernel/2, selectedValue);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/conservativeSmoothing", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionConservativeSmoothing(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, false);
+
+
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/convolutional/gaussian", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel") || !req.has_param("sigma")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+    
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    float sigma = stof(req.get_param_value("sigma"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<float>> gaussianKernel = getGaussianModel(kernel, sigma);
+
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+    img = convolutionGaussian(result, img, kernel/2, gaussianKernel);
+
+    vector<vector<pixel>> gaussianModelResult = transformKernelModelToImg(gaussianKernel, kernel);
+
+
+    string responseIMG = imgToString(img, false);
+    string responseGaussianModel = imgToString(gaussianModelResult, true);
+  
+    stringstream json;
+    json   << "{\n \"image\": " << responseIMG 
+           << ",\n \"kernelModel\": " << responseGaussianModel << "\n}";
+
+    res.set_content(json.str(), "application/json");
+  });
+
+  svr.Post("/borderDetection/prewit", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = prewitBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+    svr.Post("/borderDetection/sobel", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = sobelBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+   svr.Post("/borderDetection/laplacian", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = laplacianBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
 
    svr.listen("localhost", 8080);
    return 0;

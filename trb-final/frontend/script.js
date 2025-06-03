@@ -8,7 +8,8 @@ document.getElementById('inputImage2').addEventListener('change', loadImageToCan
 document.getElementById('rangeForm').innerHTML = `  <label class = "label" id = "labelRange">Valor: 128</label>
                                                     <input type= "range" id="range" min="0" max="255">`;
 
-document.getElementById('selectConvertion').addEventListener('change', showThresholdRange());
+document.getElementById('selectConvertion').addEventListener('change', showThresholdRange);
+document.getElementById('selectFeatures').addEventListener('change', updateRange);
 
 
 function loadImageToCanvas(inputId, canvasId) {
@@ -247,11 +248,13 @@ function updateFeature(selectedOption){
         switch(selectedFeature){
             case 'arithmeticButton':
                 showRange(false);
+                showConvolutionRange(false);
                 selectOptions.innerHTML     =   `   <option value="addValue">Adicionar</option>
                                                     <option value="subtValue">Subtrair</option>`;
                 break;
             case 'logicButton':
                     showRange(false);
+                    showConvolutionRange(false);
                     selectOptions.innerHTML =  `    <option value="and">AND</option>
                                                     <option value="or">OR</option>
                                                     <option value="xor">XOR</option>
@@ -260,36 +263,49 @@ function updateFeature(selectedOption){
                 break;
             case 'diffButton':
                 showRange(false);
+                showConvolutionRange(false);
                 selectOptions.innerHTML =  ``;
                 break;
             case 'linearButton':
                 showRange(true);
+                showConvolutionRange(false);
                 selectOptions.innerHTML =  `<option value="average">Média</option>
-                                            <option value="blending">Blending</option>`;
+                                            <option value="blending" class="percentRange">Blending</option>`;
                 break;
         }
     } else{
         switch(selectedFeature){
             case 'arithmeticButton':
                 showRange(true);
-                selectOptions.innerHTML =  `<option value="addValue">Adicionar</option>
-                                            <option value="subtValue">Subtrair</option>
-                                            <option value="multValue">Multiplicação</option>
-                                            <option value="divValue">Divisão</option>`;
+                selectOptions.innerHTML =  `<option value="addValue" class="valueRange">Adicionar</option>
+                                            <option value="subtValue" class="valueRange">Subtrair</option>
+                                            <option value="multValue" class="valueRange">Multiplicação</option>
+                                            <option value="divValue" class="valueRange">Divisão</option>`;
                 break;
             case 'invertButton':
                 showRange(false);
+                showConvolutionRange(false);
                 selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
                                             <option value="vertical">Vertical</option>`;
                 break;
             
             case 'convolutionalButton':
-                showRange(false);
-                selectOptions.innerHTML =  `<option value="mean">MEAN</option>
-                                            <option value="min">MIN</option>
-                                            <option value="max">MAX</option>`;
+                showConvolutionRange(true);
+                selectOptions.innerHTML =  `<option value="mean" class="convolutional">MEAN</option>
+                                            <option value="min" class="convolutional">MIN</option>
+                                            <option value="max" class="convolutional">MAX</option>
+                                            <option value="median" class="convolutional">MEDIANA</option>
+                                            <option value="order" class="convolutional">ORDEM</option>
+                                            <option value="conservativeSmoothing" class="convolutional">SUAVIZAÇÃOO CONSERVATIVA</option>
+                                            <option value="gaussian" class="convolutional">Gaussiano</option>`;
                 break;
-
+            case 'borderDetectionButton':
+                showRange(false);
+                showConvolutionRange(false);
+                selectOptions.innerHTML =  `<option value="prewit">Prewit</option>
+                                            <option value="sobel">Sobel</option>
+                                            <option value="laplacian">Laplaciano</option>`;
+                break;
         }
 
     }
@@ -299,11 +315,51 @@ function updateRangeLabel(){
     document.getElementById("labelRange").innerHTML= `<label class = "label" id= "labelRange">Valor: ${document.getElementById("range").value}</label>`
 }
 
+function updateRange() {
+    const selectElement = document.getElementById('selectFeatures');
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const selectedClass = selectedOption.className;
+
+    switch (selectedClass) {
+        case 'valueRange':
+            showRange(true);
+            break;
+        case 'convolutional':
+            showConvolutionRange(true);
+            break;
+        case 'percentRange':
+            showRange(true);
+            break;
+        default:
+            showRange(false);
+    }
+}
+
 function showRange(show){
-    console.log(show)
     if (show){
         document.getElementById('rangeForm').innerHTML = `  <label class = "label" id= "labelRange">Valor: 128</label>
                                                             <input type= "range" id="range" min="0" max="255" oninput="updateRangeLabel()">`;   
+    }else {
+        document.getElementById('rangeForm').innerHTML = ``;                                 
+    }
+}
+
+function showConvolutionRange(show){
+    selected = document.getElementById('selectFeatures').value;
+
+    if (show) {
+        let html = `<label class = "label" id= "labelRange">Valor: 7</label>
+                    <input type= "range" id="range" min="3" max="11" step="2" oninput="updateRangeLabel()">`;
+       
+        if (selected == 'order'){
+            html += `<input type="number" name="number" id="inputValue" max="5">`;   
+        }
+
+        if (selected == 'gaussian'){
+            html += `<input type="number" name="number" id="inputValue" max="100" step="0.01">`
+        }
+                    
+        document.getElementById('rangeForm').innerHTML = html;
     }else {
         document.getElementById('rangeForm').innerHTML = ``;                                 
     }
@@ -372,6 +428,8 @@ function executeFeature(){
         
         case 'convolutionalButton': 
             convolutional(selected);
+        case 'borderDetectionButton':
+            borderDetection(selected);
     }       
 }
 
@@ -668,18 +726,40 @@ function getHistogram(img, histogram){
 
 function  convolutional(option){
     matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
-    
-    if(false){
+    const kernel = document.getElementById('range').value;
+    let invalid = false;
+    let msgError = '';
 
+    if (option == 'order'){
+        const inputValue = document.getElementById('inputValue').value;
+        invalid = !verifityValueIsInRange(inputValue, 1, kernel*kernel);
+        msgError += `\nInsira um valor dentro do range (1, ${kernel*kernel})`;
+    }
+
+    if(invalid){
+        alert(msgError);
     } else {
-        endpoint = `http://localhost:8080/convolutional/${option}`; 
+        endpoint = `http://localhost:8080/convolutional/${option}?kernel=${kernel}`; 
+        if (option == 'order'){
+            endpoint += `&selectedvalue=${document.getElementById('inputValue').value}`;
+        }
+        else if (option == 'gaussian'){
+            const value = document.getElementById('inputValue').value.replace(",", ".");
+            endpoint += `&sigma=${value}`;
+        }
+        
         fetch(endpoint, {
             method: 'POST',
             body: matrixJSON
         })
         .then(response => response.json())
-        .then(data => {      
-            drawImage(data);
+        .then(data => {     
+            if (option == 'gaussian'){
+                drawImage(data.image);
+            } 
+            else{
+                drawImage(data);
+            }
         })
         .catch(error => {
             console.error('Erro: ', error);
@@ -687,6 +767,28 @@ function  convolutional(option){
     }
 }
 
+function borderDetection(option){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+
+
+    if(false){
+        
+    } else {
+        endpoint = `http://localhost:8080/borderDetection/${option}`; 
+        
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {     
+            draw8bitImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
+    }
+}
 
 
 function equalizeHistogram(){
@@ -710,4 +812,10 @@ function equalizeHistogram(){
             console.error('Erro: ', error);
         });
     }
+}
+
+
+/// Verificações
+function verifityValueIsInRange(value, min, max){
+    return ((value<=max) && (value>=min));
 }

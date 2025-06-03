@@ -23,6 +23,10 @@
         "xlocinfo": "cpp",
         "xtree": "cpp",
         "ostream": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "string": "cpp"
     }
 }
