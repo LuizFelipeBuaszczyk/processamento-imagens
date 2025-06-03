@@ -299,7 +299,13 @@ function updateFeature(selectedOption){
                                             <option value="conservativeSmoothing" class="convolutional">SUAVIZAÇÃOO CONSERVATIVA</option>
                                             <option value="gaussian" class="convolutional">Gaussiano</option>`;
                 break;
-
+            case 'borderDetectionButton':
+                showRange(false);
+                showConvolutionRange(false);
+                selectOptions.innerHTML =  `<option value="prewit">Prewit</option>
+                                            <option value="sobel">Sobel</option>
+                                            <option value="laplacian">Laplaciano</option>`;
+                break;
         }
 
     }
@@ -422,6 +428,8 @@ function executeFeature(){
         
         case 'convolutionalButton': 
             convolutional(selected);
+        case 'borderDetectionButton':
+            borderDetection(selected);
     }       
 }
 
@@ -759,6 +767,28 @@ function  convolutional(option){
     }
 }
 
+function borderDetection(option){
+    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+
+
+    if(false){
+        
+    } else {
+        endpoint = `http://localhost:8080/borderDetection/${option}`; 
+        
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {     
+            draw8bitImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
+    }
+}
 
 
 function equalizeHistogram(){
@@ -783,8 +813,6 @@ function equalizeHistogram(){
         });
     }
 }
-
-
 
 
 /// Verificações

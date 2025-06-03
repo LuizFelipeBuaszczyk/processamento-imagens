@@ -279,14 +279,11 @@ struct pixel{
         vector<uint8_t> valuesRed;
         vector<uint8_t> valuesGreen;
         vector<uint8_t> valuesBlue;
-        pixel targetPixel;
-
+        pixel targetPixel = img[targetY][targetX];
 
         for(int i = targetY-padding; i <= targetY+padding; i++){
             for (int j = targetX-padding; j <= targetX+padding; j++){
-                if (i == targetY && j == targetX){
-                    targetPixel = img[i][j];
-                }else{
+                if (!((i == targetY) && (j == targetX))){
                     valuesRed.push_back(img[i][j].px.red);
                     valuesGreen.push_back(img[i][j].px.green);
                     valuesBlue.push_back(img[i][j].px.blue);
@@ -434,6 +431,77 @@ struct pixel{
         px.red = pxValue;
     }
 
+    void prewitBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        float valueX, valueY; 
+        int xDerivate[3][3], yDerivate[3][3];
+
+        xDerivate[0][0] = -1; xDerivate[0][1] = 0; xDerivate[0][2] = 1;
+        xDerivate[1][0] = -1; xDerivate[1][1] = 0; xDerivate[1][2] = 1;
+        xDerivate[2][0] = -1; xDerivate[2][1] = 0; xDerivate[2][2] = 1;
+
+        yDerivate[0][0] = -1; yDerivate[0][1] = -1; yDerivate[0][2] = -1;
+        yDerivate[1][0] =  0; yDerivate[1][1] =  0; yDerivate[1][2] =  0;
+        yDerivate[2][0] =  1; yDerivate[2][1] = 1; yDerivate[2][2] = 1;   
+
+        valueX = valueY = 0;
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                valueX += (img[i][j].px.red * yDerivate[y][x]);
+                valueY += (img[i][j].px.red * xDerivate[y][x]);                
+            } 
+        }
+
+        int value = pow(((valueX*valueX) + (valueY*valueY)), 0.5);
+
+        px.red = validPixelValue(value);
+    }
+
+    void sobelBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        float valueX, valueY; 
+        int xDerivate[3][3], yDerivate[3][3];
+
+        xDerivate[0][0] = 1; xDerivate[0][1] = 0; xDerivate[0][2] = -1;
+        xDerivate[1][0] = 2; xDerivate[1][1] = 0; xDerivate[1][2] = -2;
+        xDerivate[2][0] = 1; xDerivate[2][1] = 0; xDerivate[2][2] = -1;
+
+        yDerivate[0][0] = 1; yDerivate[0][1] = 2; yDerivate[0][2] = 1;
+        yDerivate[1][0] =  0; yDerivate[1][1] =  0; yDerivate[1][2] =  0;
+        yDerivate[2][0] =  -1; yDerivate[2][1] =  -2; yDerivate[2][2] =  -1;   
+
+        valueX = valueY = 0;
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                valueX += (img[i][j].px.red * yDerivate[y][x]);
+                valueY += (img[i][j].px.red * xDerivate[y][x]);                
+            } 
+        }
+
+        int value = pow(((valueX*valueX) + (valueY*valueY)), 0.5);
+
+        px.red = validPixelValue(value);
+    }
+
+
+    void laplacianBorderDetection(vector<vector<pixel>>& img, int padding, int targetY, int targetX){
+        int Derivate[3][3];
+        int value = 0;
+
+        Derivate[0][0] = -1; Derivate[0][1] = -1; Derivate[0][2] = -1;
+        Derivate[1][0] = -1; Derivate[1][1] = 8; Derivate[1][2] = -1;
+        Derivate[2][0] = -1; Derivate[2][1] = -1; Derivate[2][2] = -1;
+
+
+
+        for(int i = targetY-padding, y=0; i <= targetY+padding; i++, y++){
+            for (int j = targetX-padding, x=0; j <= targetX+padding; j++, x++){
+                value += (img[i][j].px.red * Derivate[y][x]);
+            } 
+        }
+
+        px.red = validPixelValue(value);
+    }
 
     uint8_t validPixelValue(int value){
         if(value>255){
@@ -900,6 +968,42 @@ vector<vector<pixel>> convolutionConservativeSmoothing(vector<vector<pixel>>& im
 
     return imgResult;
 }
+
+vector<vector<pixel>> prewitBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].prewitBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> sobelBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].sobelBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+
+vector<vector<pixel>> laplacianBorderDetection(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].laplacianBorderDetection(img, padding, i, j);
+        }
+    }
+
+    return imgResult;
+}
+
+
 
 vector<vector<pixel>> convolutionGaussian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, vector<vector<float>>& gaussianKernel){
 
@@ -1506,6 +1610,73 @@ int main() {
 
     res.set_content(json.str(), "application/json");
   });
+
+  svr.Post("/borderDetection/prewit", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = prewitBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+    svr.Post("/borderDetection/sobel", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = sobelBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+   svr.Post("/borderDetection/laplacian", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = 3;
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    img = convolutionMedian(result, img, kernel/2);
+    result = edgeAdjust(img, kernel);
+
+    result = convertTo8Bit(result);
+    img = convertTo8Bit(img);
+
+    img = laplacianBorderDetection(result, img, kernel/2);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
 
    svr.listen("localhost", 8080);
    return 0;
