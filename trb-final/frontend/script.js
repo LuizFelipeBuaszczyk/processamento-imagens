@@ -225,7 +225,9 @@ function updateButtons(){
     }else{
         document.getElementById("featureButtons").innerHTML = `  <button value="arithmetic" id="arithmeticButton" class="featureButton">Aritmética</button>
                                                                  <button value="invert" id="invertButton" class="featureButton">Inverção</button>
-                                                                 <button value="convolutional" id="convolutionalButton" class="featureButton">Convolução</button>`;
+                                                                 <button value="convolutional" id="convolutionalButton" class="featureButton">Convolução</button>
+                                                                 <button value="borderDetection" id="borderDetectionButton" class="featureButton">Bordas</button>
+                                                                 <button value="morphological" id="morphologicalButton" class="featureButton">Operações morfológicas</button>`;
     }
 
     document.querySelectorAll('.featureButton').forEach(button => {
@@ -241,7 +243,6 @@ function updateButtons(){
 
 function updateFeature(selectedOption){
     const selectOptions = document.getElementById("selectFeatures");
-
     const checked = document.getElementById("enable2Images").checked;
 
     if (checked){
@@ -277,6 +278,7 @@ function updateFeature(selectedOption){
         switch(selectedFeature){
             case 'arithmeticButton':
                 showRange(true);
+                showMorphoTypeOptions(false);
                 selectOptions.innerHTML =  `<option value="addValue" class="valueRange">Adicionar</option>
                                             <option value="subtValue" class="valueRange">Subtrair</option>
                                             <option value="multValue" class="valueRange">Multiplicação</option>
@@ -285,12 +287,14 @@ function updateFeature(selectedOption){
             case 'invertButton':
                 showRange(false);
                 showConvolutionRange(false);
+                showMorphoTypeOptions(false);
                 selectOptions.innerHTML =  `<option value="horizontal">Horizontal</option>
                                             <option value="vertical">Vertical</option>`;
                 break;
             
             case 'convolutionalButton':
                 showConvolutionRange(true);
+                showMorphoTypeOptions(false);
                 selectOptions.innerHTML =  `<option value="mean" class="convolutional">MEAN</option>
                                             <option value="min" class="convolutional">MIN</option>
                                             <option value="max" class="convolutional">MAX</option>
@@ -302,12 +306,37 @@ function updateFeature(selectedOption){
             case 'borderDetectionButton':
                 showRange(false);
                 showConvolutionRange(false);
+                showMorphoTypeOptions(false);
                 selectOptions.innerHTML =  `<option value="prewit">Prewit</option>
                                             <option value="sobel">Sobel</option>
                                             <option value="laplacian">Laplaciano</option>`;
                 break;
+            case 'morphologicalButton':
+                showConvolutionRange(true);
+                showMorphoTypeOptions(true);
+                selectOptions.innerHTML =  `<option value="dilation" class="convolutional">Dilatação</option>
+                                            <option value="erosion" class="convolutional">Erosão</option>
+                                            <option value="opening" class="convolutional">Abertura</option>
+                                            <option value="closing" class="convolutional">Fechamento</option>
+                                            <option value="outline" class="convolutional">Contorno</option>`;
+                break;
         }
 
+    }
+}
+
+function showMorphoTypeOptions(show){
+    const selectFeatureOptions = document.getElementById('selectFeatureOptions');
+
+    if (show){
+        selectFeatureOptions.innerHTML =    `
+                                            <option value="1">Quadrado</option>
+                                            <option value="2">Diamante</option>
+                                            <option value="3">Linha Horizontal</option>
+                                            <option value="4">Linha Vertical</option>
+                                            `;
+    }else {
+        selectFeatureOptions.innerHTML = '';
     }
 }
 
@@ -428,8 +457,13 @@ function executeFeature(){
         
         case 'convolutionalButton': 
             convolutional(selected);
+            break;
         case 'borderDetectionButton':
             borderDetection(selected);
+            break;
+        case 'morphologicalButton':
+            morphological(selected);
+            break;
     }       
 }
 
@@ -725,7 +759,7 @@ function getHistogram(img, histogram){
 }
 
 function  convolutional(option){
-    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
     const kernel = document.getElementById('range').value;
     let invalid = false;
     let msgError = '';
@@ -768,13 +802,37 @@ function  convolutional(option){
 }
 
 function borderDetection(option){
-    matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
 
 
     if(false){
         
     } else {
         endpoint = `http://localhost:8080/borderDetection/${option}`; 
+        
+        fetch(endpoint, {
+            method: 'POST',
+            body: matrixJSON
+        })
+        .then(response => response.json())
+        .then(data => {     
+            draw8bitImage(data);
+        })
+        .catch(error => {
+            console.error('Erro: ', error);
+        });
+    }
+}
+
+function morphological(option){
+    const matrixJSON = transformIMGtoMATRIX(document.getElementById('showInputImage'));
+    const kernel = document.getElementById('range').value;
+    const type = document.getElementById('selectFeatureOptions').value;
+
+    if(false){
+        
+    } else {
+        endpoint = `http://localhost:8080/morphological/${option}?kernel=${kernel}&type=${type}`; 
         
         fetch(endpoint, {
             method: 'POST',

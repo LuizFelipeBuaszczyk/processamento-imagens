@@ -1,1 +1,1 @@
-g++ -o api main.cpp -pthread
+g++ -o api.exe main.cpp -pthread

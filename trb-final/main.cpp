@@ -503,6 +503,113 @@ struct pixel{
         px.red = validPixelValue(value);
     }
 
+    void morphoDilation(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int type){
+        switch (type){
+            case 1: // Square
+                for(int i = targetY-padding; i <= targetY+padding; i++){
+                    for (int j = targetX-padding; j <= targetX+padding; j++){
+                        if (img[i][j].px.red == 255){
+                            px.red = 255;
+                            px.alpha = 255;
+                            break;
+                        }
+                    } 
+                }
+                break;
+            case 2: { // Diamond 
+                bool pixelFound = false;
+
+                for (int i = targetY - padding; i <= targetY + padding; i++) {
+                    for (int j = targetX - padding; j <= targetX + padding; j++) {
+                        if (abs(i - targetY) + abs(j - targetX) <= padding) {
+                            // Está dentro do elemento estruturante em forma de diamante
+                            if (img[i][j].px.red == 255) {
+                                px.red = 255;
+                                px.alpha = 255;
+                                pixelFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (pixelFound) break;
+                }
+            }
+            case 3: // Line X
+                for(int i = targetX-padding; i <= targetX+padding; i++){
+                    if (img[targetY][i].px.red == 255){
+                        px.red = 255;
+                        px.alpha = 255;
+                        break;
+                    }
+                }
+                break;
+            case 4: // Line Y
+                for(int i = targetY-padding; i <= targetY+padding; i++){
+                    if (img[i][targetX].px.red == 255){
+                        px.red = 255;
+                        px.alpha = 255;
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
+    void morphoErosion(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int type){
+        px.red = 255;
+        px.alpha = 255;
+
+        switch (type){
+            case 1: // Square
+                for(int i = targetY-padding; i <= targetY+padding; i++){
+                    for (int j = targetX-padding; j <= targetX+padding; j++){
+                        if (img[i][j].px.red != 255){
+                            px.red = 0;
+                            px.alpha = 255;
+                            break;
+                        }
+                    } 
+                }
+                break;
+            case 2: {// Diamond
+                bool pixelFound = false;
+
+                for (int i = targetY - padding; i <= targetY + padding; i++) {
+                    for (int j = targetX - padding; j <= targetX + padding; j++) {
+                        if (abs(i - targetY) + abs(j - targetX) <= padding) {
+                            // Está dentro do elemento estruturante em forma de diamante
+                            if (img[i][j].px.red != 255) {
+                                px.red = 0;
+                                px.alpha = 0;
+                                pixelFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (pixelFound) break;
+                }
+            }   
+            case 3: // Line X
+                for(int i = targetY-padding; i <= targetY+padding; i++){
+                    if (img[targetY][i].px.red != 255){
+                        px.red = 0;
+                        px.alpha = 255;
+                        break;
+                    }
+                }
+                break;
+            case 4: // Line Y
+                for(int i = targetY-padding; i <= targetY+padding; i++){
+                    if (img[i][targetX].px.red != 255){
+                        px.red = 0;
+                        px.alpha = 255;
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+
     uint8_t validPixelValue(int value){
         if(value>255){
             return 255;
@@ -1003,7 +1110,76 @@ vector<vector<pixel>> laplacianBorderDetection(vector<vector<pixel>>& img, vecto
     return imgResult;
 }
 
+vector<vector<pixel>> morphoDilation(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int type){
 
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].morphoDilation(img, padding, i, j, type);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> morphoErosion(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int type){
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].morphoErosion(img, padding, i, j, type);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> morphoOpening(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int type){
+    vector<vector<pixel>> imgErosion = imgResult;
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgErosion[i-padding][j-padding].morphoErosion(img, padding, i, j, type);
+        }
+    }
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].morphoDilation(imgErosion, padding, i, j, type);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> morphoClosing(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int type){
+    vector<vector<pixel>> imgDilation = imgResult;
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgDilation[i-padding][j-padding].morphoDilation(img, padding, i, j, type);
+        }
+    }
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgResult[i-padding][j-padding].morphoDilation(imgDilation, padding, i, j, type);
+        }
+    }
+
+    return imgResult;
+}
+
+vector<vector<pixel>> morphoOutline(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, int type){
+    vector<vector<pixel>> imgErosion = imgResult;
+
+    for(size_t i = padding; i < imgResult.size() + padding; i++){
+        for(size_t j = padding; j < imgResult[0].size() + padding; j++){
+            imgErosion[i-padding][j-padding].morphoErosion(img, padding, i, j, type);
+        }
+    }
+
+    return subtImages(imgResult, imgErosion);
+        
+}
 
 vector<vector<pixel>> convolutionGaussian(vector<vector<pixel>>& img, vector<vector<pixel>>& imgResult, int padding, vector<vector<float>>& gaussianKernel){
 
@@ -1677,6 +1853,122 @@ int main() {
     res.set_content(responseIMG, "application/json");
   });
 
+  /*
+    1 - Square
+    2 - Diamond
+    3 - Line X
+    4 - Line Y
+
+  */
+
+  svr.Post("/morphological/dilation", [](const httplib::Request& req, httplib::Response& res){
+    if(!req.has_param("kernel") || !req.has_param("type")){
+        res.set_content(req.body, "application/json");
+        return;
+    }
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int type = stoi(req.get_param_value("type"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    result = edgeAdjust(img, kernel);
+    result = convertTo8Bit(result);
+    result = convertTo1Bit(result, 128);
+
+    img = morphoDilation(result, img, kernel/2, type);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/morphological/erosion", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int type = stoi(req.get_param_value("type"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    result = edgeAdjust(img, kernel);
+    result = convertTo8Bit(result);
+    result = convertTo1Bit(result, 128);
+
+    img = morphoErosion(result, img, kernel/2, type);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/morphological/opening", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int type = stoi(req.get_param_value("type"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    result = edgeAdjust(img, kernel);
+    result = convertTo8Bit(result);
+    result = convertTo1Bit(result, 128);
+
+    img = morphoOpening(result, img, kernel/2, type);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/morphological/closing", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int type = stoi(req.get_param_value("type"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    result = edgeAdjust(img, kernel);
+    result = convertTo8Bit(result);
+    result = convertTo1Bit(result, 128);
+
+    img = morphoClosing(result, img, kernel/2, type);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
+
+  svr.Post("/morphological/outline", [](const httplib::Request& req, httplib::Response& res){
+
+    int kernel = stoi(req.get_param_value("kernel"));
+    int type = stoi(req.get_param_value("type"));
+
+    string body = req.body;
+    vector<vector<pixel>> img = parse_json_pixels(body);
+    vector<vector<pixel>> result = edgeAdjust(img, kernel);
+
+    // Tratamento
+    result = edgeAdjust(img, kernel);
+    result = convertTo8Bit(result);
+    result = convertTo1Bit(result, 128);
+
+    img = morphoOutline(result, img, kernel/2, type);
+
+    string responseIMG = imgToString(img, true);
+  
+    res.set_content(responseIMG, "application/json");
+  });
 
    svr.listen("localhost", 8080);
    return 0;
