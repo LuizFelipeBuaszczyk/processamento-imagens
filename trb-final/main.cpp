@@ -504,6 +504,7 @@ struct pixel{
     }
 
     void morphoDilation(vector<vector<pixel>>& img, int padding, int targetY, int targetX, int type){
+        px.red = 0;
         switch (type){
             case 1: // Square
                 for(int i = targetY-padding; i <= targetY+padding; i++){
@@ -590,7 +591,7 @@ struct pixel{
                 }
             }   
             case 3: // Line X
-                for(int i = targetY-padding; i <= targetY+padding; i++){
+                for(int i = targetX-padding; i <= targetX+padding; i++){
                     if (img[targetY][i].px.red != 255){
                         px.red = 0;
                         px.alpha = 255;
