@@ -112,3 +112,24 @@ section div button{
     border: 1px solid black;
 }
 
+#imageModal{
+    position: fixed;
+    margin: auto;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.containerModal{
+    display: flex;
+    flex-direction: column;
+}
+
+.containerModal header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+#canvasImageModal{
+    width: 300px;
+    height: 300px;
+}

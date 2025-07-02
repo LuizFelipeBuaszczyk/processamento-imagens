@@ -71,6 +71,16 @@ document.getElementById('saveImage').addEventListener('click', function(){
     saveImage();
 });
 
+document.getElementById('selectFeatureOptions').style.display = 'none';
+
+document.getElementById('openModalButton').addEventListener('click', () => {
+    document.getElementById('imageModal').showModal();
+})
+
+document.getElementById('exit-kernel-modal').addEventListener('click', () => {
+    document.getElementById('imageModal').close();
+})
+
 // Função para salvar imagens
 function saveImage(){
     const canvas = document.getElementById('canvas');
@@ -150,6 +160,32 @@ function drawImage(imageData){
             imageDataObj.data[i++] = pixel[1]; // Green
             imageDataObj.data[i++] = pixel[2]; // Blue
             imageDataObj.data[i++] = pixel[3]; // Alpha
+        }
+    }
+
+    ctx.putImageData(imageDataObj, 0, 0);   
+}
+
+function drawKernelImage(kernelData){
+    console.log(kernelData);
+    const canvas = document.getElementById('canvasImageModal');
+    const ctx = canvas.getContext('2d');
+
+    const height = kernelData.length;
+    const width = kernelData[0].length;
+    canvas.width = width;
+    canvas.height = height;
+
+    const imageDataObj = ctx.createImageData(width, height);
+
+    let i = 0;
+    for(let y = 0; y < height; y++){
+        for(let x = 0; x < width; x++){
+            let pixel = kernelData[y][x];
+            imageDataObj.data[i++] = pixel; // Red
+            imageDataObj.data[i++] = pixel; // Green
+            imageDataObj.data[i++] = pixel; // Blue
+            imageDataObj.data[i++] = 255; // Alpha
         }
     }
 
@@ -244,6 +280,8 @@ function updateButtons(){
 function updateFeature(selectedOption){
     const selectOptions = document.getElementById("selectFeatures");
     const checked = document.getElementById("enable2Images").checked;
+    selectOptions.style.display = 'flex';
+
 
     if (checked){
         switch(selectedFeature){
@@ -265,7 +303,7 @@ function updateFeature(selectedOption){
             case 'diffButton':
                 showRange(false);
                 showConvolutionRange(false);
-                selectOptions.innerHTML =  ``;
+                selectOptions.style.display = 'none';
                 break;
             case 'linearButton':
                 showRange(true);
@@ -335,8 +373,10 @@ function showMorphoTypeOptions(show){
                                             <option value="3">Linha Horizontal</option>
                                             <option value="4">Linha Vertical</option>
                                             `;
+        selectFeatureOptions.style.display = 'flex';
     }else {
         selectFeatureOptions.innerHTML = '';
+        selectFeatureOptions.style.display = 'none';
     }
 }
 
@@ -790,6 +830,7 @@ function  convolutional(option){
         .then(data => {     
             if (option == 'gaussian'){
                 drawImage(data.image);
+                drawKernelImage(data.kernelModel);
             } 
             else{
                 drawImage(data);
