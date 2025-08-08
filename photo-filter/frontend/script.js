@@ -417,8 +417,8 @@ function showConvolutionRange(show){
     selected = document.getElementById('selectFeatures').value;
 
     if (show) {
-        let html = `<label class = "label" id= "labelRange">Valor: 7</label>
-                    <input type= "range" id="range" min="3" max="11" step="2" oninput="updateRangeLabel()">`;
+        let html = `<label class = "label" id= "labelRange">Valor: 17</label>
+                    <input type= "range" id="range" min="3" max="29" step="2" oninput="updateRangeLabel()">`;
        
         if (selected == 'order'){
             html += `<input type="number" name="number" id="inputValue" max="5">`;   
